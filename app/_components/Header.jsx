@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 export default function Header() {
   const Menu = [
     {
       id: 1,
       name: "Home",
-      path: "/home",
+      path: "/",
     },
     {
       id: 2,
@@ -30,16 +30,15 @@ export default function Header() {
         <Image src="/logo.svg" alt="logo" width={180} height={80} />
         <ul className="md:flex gap-8 hidden">
           {Menu.map((item, index) => (
-            <li
-              className=" hover:text-primary cursor-pointer hover:scale-105 trasition-all ease-in-out"
-              key={`nav_${index}`}
-            >
-              <Link href={{ pathname: item.path }}>{item.name}</Link>
-            </li>
+            <Link href={item.path}>
+              <li className=" hover:text-primary cursor-pointer hover:scale-105 trasition-all ease-in-out">
+                {item.name}
+              </li>
+            </Link>
           ))}
         </ul>
       </div>
-      <Button>Get Started</Button>
+      <Button>Sign In</Button>
     </div>
   );
 }
