@@ -1,7 +1,5 @@
 "use client";
 import React, { useEffect, useState } from 'react'
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/swiper-bundle.css';
 import { fetchEmployees } from '../service/employee';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';

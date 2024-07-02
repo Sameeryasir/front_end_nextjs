@@ -38,7 +38,9 @@ export default function Header() {
           ))}
         </ul>
       </div>
+      <Link href={'/signUp/'}>
       <Button>Sign In</Button>
+      </Link>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export default function Shop({heading}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchShops(2);
+        const response = await fetchShops();
         setShops(response);
       } catch (error) {
         console.error("Error fetching data:", error);
