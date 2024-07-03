@@ -4,26 +4,13 @@ import { useEffect, useState } from "react";
 import { fetchShops } from "../service/shops";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-export default function Shop({heading}) {
-  const [shops, setShops] = useState([]);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchShops();
-        setShops(response);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+import { fetchCategory } from "../service/Category";
 
-    fetchData();
-  }, []);
-
-  console.log("shops", shops);
+export default function Shop({ heading, shops = [] }) {
   return (
     <section className="container mx-auto p-10 md:py-12 px-0 md:p-8 md:px-0">
       <h1 className="mb-10 items-center flex flex-col  font-bold text-4xl tracking-wide">
-        {heading="Popular Shops"}
+        {(heading = "Popular Shops")}
       </h1>
       {shops.length > 0 && (
         <div className="flex flex-wrap gap-8 justify-center">

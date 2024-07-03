@@ -39,7 +39,7 @@ export default function Header() {
         </ul>
       </div>
       <Link href={'/signUp/'}>
-      <Button>Sign In</Button>
+      <Button className=' hover:scale-105 trasition-all ease-in-out'>Sign In</Button>
       </Link>
     </div>
   );

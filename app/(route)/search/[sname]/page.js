@@ -1,15 +1,27 @@
 "use client";
-import React, { useEffect,useState } from 'react'
-import { fetchShops } from '@/app/service/shops';
-import Shop from '@/app/_components/Shop';
-export default function search({params}) {
+import React, { useEffect, useState } from "react";
+import { fetchShops } from "@/app/service/shops";
+import Shop from "@/app/_components/Shop";
+import { fetchCategory } from "@/app/service/Category";
+import { usePathname } from "next/navigation";
+
+export default function search() {
   const [shops, setShops] = useState([]);
-  
+  const params = usePathname();
+  const categoryName = params.split("/")[2];
+
   useEffect(() => {
-    console.log(params.sname);
+    setShops([]);
+
     const fetchData = async () => {
       try {
-        const response = await fetchShops();
+        const categories = await fetchCategory();
+
+        const category = categories.filter((cat) => {
+          return cat.Slug === categoryName;
+        });
+
+        const response = await fetchShops(category?.[0].id);
         setShops(response);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -17,10 +29,11 @@ export default function search({params}) {
     };
 
     fetchData();
-
-  }, []);
+  }, [params]);
 
   return (
-    <div><Shop heading={params.sname}/></div>
-  )
+    <div>
+      <Shop shops={shops} />
+    </div>
+  );
 }
