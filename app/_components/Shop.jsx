@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import { useEffect, useState } from "react";
-import { fetchShops } from "../service/shops";
+
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { fetchCategory } from "../service/Category";
+
+import Link from "next/link";
 
 export default function Shop({ heading, shops = [] }) {
   return (
@@ -23,6 +23,7 @@ export default function Shop({ heading, shops = [] }) {
                     width={300}
                     height={300}
                     className="rounded-3xl"
+                    alt=""
                   />
                 )}
                 <div className="flex justify-center mt-6 space-x-1">
@@ -62,7 +63,10 @@ export default function Shop({ heading, shops = [] }) {
                     <path d="M6.43 12l-2.36 1.64a1 1 0 0 1-1.53-1.11l.83-2.75a1 1 0 0 0-.35-1.09L.73 6.96a1 1 0 0 1 .59-1.8l2.87-.06a1 1 0 0 0 .92-.67l.95-2.71a1 1 0 0 1 1.88 0l.95 2.71c.13.4.5.66.92.67l2.87.06a1 1 0 0 1 .59 1.8l-2.3 1.73a1 1 0 0 0-.34 1.09l.83 2.75a1 1 0 0 1-1.53 1.1L7.57 12a1 1 0 0 0-1.14 0z"></path>
                   </svg>
                 </div>
-                <h1 className="text-2xl my-4">{shop.Name}</h1>
+                <Link href={"/detail/shop/" + shop.Name + "-" + shop.ShopId}>
+                  {" "}
+                  <h1 className="text-2xl my-4">{shop.Name}</h1>{" "}
+                </Link>
                 <p className="mb-4 text-sm">{shop.Address}</p>
                 <Button className="p-2 px-4 border border-primary bg-white text-primary rounded-full w-full text-center text-sm mt-2 cursor-pointer transition duration-300 ease-in-out hover:bg-primary hover:text-white">
                   Book Now

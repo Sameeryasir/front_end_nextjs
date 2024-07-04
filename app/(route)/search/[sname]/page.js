@@ -15,13 +15,9 @@ export default function search() {
 
     const fetchData = async () => {
       try {
-        const categories = await fetchCategory();
-
-        const category = categories.filter((cat) => {
-          return cat.Slug === categoryName;
-        });
-
-        const response = await fetchShops(category?.[0].id);
+        const cateroryNameArray = categoryName.split("-");
+        const id = cateroryNameArray[cateroryNameArray.length - 1];
+        const response = await fetchShops(id);
         setShops(response);
       } catch (error) {
         console.error("Error fetching data:", error);

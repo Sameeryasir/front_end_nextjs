@@ -23,7 +23,6 @@ export default function Searchlist() {
     fetchData();
   }, []);
 
-
   return (
     <div className="mb-10 items-center flex flex-col gap-4">
       <h2 className="font-bold text-4xl tracking-wide">
@@ -39,18 +38,28 @@ export default function Searchlist() {
         </Button>
       </div>
       <div className="grid grid-cols-3 mt-5 md:grid-cols-4 lg:grid-cols-6">
-      {category && category.map((categories,index)=>(
-        <Link href={'/search/'+ categories.Slug}>
-      <div key={index} style={{ background: 'rgb(128 0 128 / 60%)'}} className="flex flex-col text-center items-center 
-        gap-2 p-5 m-2 rounded-lg cursor-pointer hover:scale-110 trasition-all ease-in-out">
-        {categories.iconUrl && (
-        <Image src={categories.iconUrl} alt='icon'  width={40} height={40}/>
-         )}
-         <label className="text-sm">{categories.Name} </label>
-         </div>
-         </Link>
-))}
-</div>
+        {category &&
+          category.map((categories, index) => (
+            <Link href={"/search/" + categories.Slug + "-" + categories.id}>
+              <div
+                key={index}
+                style={{ background: "rgb(128 0 128 / 60%)" }}
+                className="flex flex-col text-center items-center 
+        gap-2 p-5 m-2 rounded-lg cursor-pointer hover:scale-110 trasition-all ease-in-out"
+              >
+                {categories.iconUrl && (
+                  <Image
+                    src={categories.iconUrl}
+                    alt="icon"
+                    width={40}
+                    height={40}
+                  />
+                )}
+                <label className="text-sm">{categories.Name} </label>
+              </div>
+            </Link>
+          ))}
+      </div>
     </div>
   );
 }

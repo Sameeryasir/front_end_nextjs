@@ -17,10 +17,11 @@ import Link from "next/link";
 import { fetchCategory } from "@/app/service/Category";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+
 export default function Shoplist({}) {
   const [category, setCategory] = useState([]);
   const params = usePathname();
-  const shops = params.split("/")[2];
+  const categories = params.split("/")[2];
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -33,6 +34,7 @@ export default function Shoplist({}) {
 
     fetchData();
   }, []);
+
   console.log(params);
 
   return (
@@ -48,10 +50,10 @@ export default function Shoplist({}) {
                   <CommandItem>
                     <Link
                       a
-                      href={"/search/" + categories.Slug}
+                      href={"/search/" + categories.Slug+ "-" + categories.id}
                       className={`p-2 flex gap-2
                       text-[14px] text-primary rounded-md cursor-pointer w-full
-                      ${shops == categories.Name}
+                      ${categories == categories.Name}
                       `}
                     >
                       {categories.iconUrl && (
