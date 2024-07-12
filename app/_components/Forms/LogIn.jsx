@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const schema = z.object({
@@ -15,7 +15,7 @@ const LoginForm = () => {
     resolver: zodResolver(schema),
   });
 
- 
+ const router =useRouter();
 
   const onSubmit = async (data) => {
     try {
@@ -38,7 +38,7 @@ const LoginForm = () => {
       localStorage.setItem("token", responseData.token);
 
       // Redirect to the dashboard
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       console.error("Error logging in:", error.message);
     }

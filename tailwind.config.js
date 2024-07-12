@@ -6,6 +6,8 @@ module.exports = {
     "./components/**/*.{js,jsx}",
     "./app/**/*.{js,jsx}",
     "./src/**/*.{js,jsx}",
+    "./src/**/*.{html,js}",
+    "./node_modules/tw-elements/js/**/*.js"
   ],
   prefix: "",
   theme: {
@@ -16,6 +18,8 @@ module.exports = {
         "2xl": "1400px",
       },
     },
+    plugins: [require("tw-elements/plugin.cjs")],
+    darkMode: "class",
     extend: {
       colors: {
         border: "hsl(var(--border))",

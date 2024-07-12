@@ -9,7 +9,7 @@ export async function fetchShops(category_id = null) {
   );
   const data = await response.json();
   return data;
-}
+} 
 
 export async function fetchShopsById(id) {
   const response = await fetch("http://localhost:3000/shop/" + id);

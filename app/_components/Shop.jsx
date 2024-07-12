@@ -13,7 +13,7 @@ export default function Shop({ heading, shops = [] }) {
         {(heading = "Popular Shops")}
       </h1>
       {shops.length > 0 && (
-        <div className="flex flex-wrap gap-8 justify-center">
+        <div className="flex flex-wrap gap-8 ml-2">
           {shops.map((shop, index) => (
             <div key={index} className="p-4 md:p-0 w-80 ">
               <section className="p-4 py-8 bg-purple-50 text-center transform duration-500 hover:-translate-y-2 cursor-pointer">

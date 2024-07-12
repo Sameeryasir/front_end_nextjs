@@ -38,7 +38,7 @@ export default function Shoplist({}) {
   console.log(params);
 
   return (
-    <div className="h-screen   mt-5 flex flex-col">
+    <div className="mt-5 flex flex-col">
       <Command>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList className="overflow-visible">
