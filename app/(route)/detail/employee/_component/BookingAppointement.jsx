@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios"; // Import axios for HTTP requests
 import { fetchService } from "@/app/service/Service";
 import {
   Dialog,
@@ -23,10 +22,11 @@ export default function BookingAppointment() {
   const [timeslot, setTimeslot] = useState([]);
   const [service, setService] = useState([]);
   const [employee, setEmployee] = useState([]);
-  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedService, setSelectedService] = useState(""); // Change to a single service
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [serviceDropdownVisible, setServiceDropdownVisible] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,35 +78,32 @@ export default function BookingAppointment() {
   };
 
   const handleServiceChange = (serviceId) => {
-    setSelectedServices((prevSelectedServices) =>
-      prevSelectedServices.includes(serviceId)
-        ? prevSelectedServices.filter((id) => id !== serviceId)
-        : [...prevSelectedServices, serviceId]
-    );
+    setSelectedService(serviceId === selectedService ? "" : serviceId);
   };
 
   const calculateTotalPrice = () => {
-    return selectedServices.reduce((total, serviceId) => {
-      const selectedService = service.find((s) => s.ServiceId === serviceId);
-      return total + (selectedService ? selectedService.ServicePrice : 0);
-    }, 0);
+    const selectedServiceData = service.find(
+      (s) => s.ServiceId === selectedService
+    );
+    return selectedServiceData ? selectedServiceData.ServicePrice : 0;
   };
 
   const handleSubmit = async () => {
     const appointmentData = {
-      Date: date.toISOString().split("T")[0], // Sending date in YYYY-MM-DD format
-      time: selectedTimeSlot,
-      ServiceId: selectedServices,
+      Date: date.toISOString().split("T")[0],
+      selectedTimeSlot,
+      ServiceId: selectedService,
       EmployeeId: selectedEmployee,
-      customerId: 1, // Assuming customer ID is 1 for this example
-      ShopId: 1, // Assuming shop ID is 1 for this example
-      price: calculateTotalPrice(),
+      CustomerId: 1,
+      ShopId: 1,
+      Price: calculateTotalPrice(),
     };
 
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch("http://localhost:3000/appointment", {
+      const response = await fetch("http://localhost:3000/appointement", 
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -121,14 +118,14 @@ export default function BookingAppointment() {
 
       const data = await response.json();
       console.log("Appointment successfully added:", data);
-      // Optionally, reset the form or show a success message
+      setIsDialogOpen(false); // Close the dialog after successful submission
     } catch (error) {
       console.error("Error adding appointment:", error);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger>
         <Button className="flex gap-2 w-full">
           <NotebookPen />
@@ -192,15 +189,11 @@ export default function BookingAppointment() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="truncate">
-                          {selectedServices.length > 0
-                            ? selectedServices
-                                .map(
-                                  (id) =>
-                                    service.find((s) => s.ServiceId === id)
-                                      ?.ServiceName
-                                )
-                                .join(", ")
-                            : "Select services"}
+                          {selectedService
+                            ? service.find(
+                                (s) => s.ServiceId === selectedService
+                              )?.ServiceName
+                            : "Select a service"}
                         </span>
                         <svg
                           className={`h-5 w-5 text-gray-400 transform ${
@@ -227,18 +220,12 @@ export default function BookingAppointment() {
                         {service.map((services) => (
                           <div
                             key={services.ServiceId}
-                            className="flex items-center p-2 hover:bg-primary hover:text-white"
+                            className={`flex items-center p-2 hover:bg-primary hover:text-white cursor-pointer ${
+                              selectedService === services.ServiceId &&
+                              "bg-primary text-white"
+                            }`}
+                            onClick={() => handleServiceChange(services.ServiceId)}
                           >
-                            <input
-                              type="checkbox"
-                              checked={selectedServices.includes(
-                                services.ServiceId
-                              )}
-                              onChange={() =>
-                                handleServiceChange(services.ServiceId)
-                              }
-                              className="mr-2"
-                            />
                             <span>
                               {services.ServiceName} - PKR{" "}
                               {services.ServicePrice}
@@ -288,7 +275,7 @@ export default function BookingAppointment() {
               className="text-red-500"
               type="button"
               variant="outline"
-              onClick={() => document.querySelector("dialog").close()}
+              onClick={() => setIsDialogOpen(false)} // Close the dialog
             >
               Close
             </Button>
@@ -298,7 +285,7 @@ export default function BookingAppointment() {
               disabled={
                 !date ||
                 !selectedTimeSlot ||
-                selectedServices.length === 0 ||
+                !selectedService ||
                 !selectedEmployee
               }
             >
