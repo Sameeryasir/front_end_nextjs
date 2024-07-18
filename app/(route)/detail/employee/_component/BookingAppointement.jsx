@@ -15,9 +15,8 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, NotebookPen } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEmployees } from "@/app/service/employee";
-import Employee from "@/app/_components/Employee";
 
-export default function BookingAppointment() {
+export default function BookingAppointment({shop}) {
   const [date, setDate] = useState(new Date());
   const [timeslot, setTimeslot] = useState([]);
   const [service, setService] = useState([]);
@@ -52,7 +51,14 @@ export default function BookingAppointment() {
     // Generate timeslots from 10 AM to 6:30 PM
     for (let i = 10; i <= 18; i++) {
       // 18 corresponds to 6 PM in 24-hour format
-      if (i <= 12) {
+      if (i === 12) {
+        timelist.push({
+          time: "12:00 PM",
+        });
+        timelist.push({
+          time: "12:30 PM",
+        });
+      } else if (i < 12) {
         timelist.push({
           time: i + ":00 AM",
         });
@@ -90,20 +96,20 @@ export default function BookingAppointment() {
 
   const handleSubmit = async () => {
     const appointmentData = {
-      Date: date.toISOString().split("T")[0],
-      selectedTimeSlot,
+      date: date.toISOString().split("T")[0],
+      Time: selectedTimeSlot,
       ServiceId: selectedService,
       EmployeeId: selectedEmployee,
-      CustomerId: 1,
-      ShopId: 1,
+      ShopId: shop?.ShopId,
       Price: calculateTotalPrice(),
     };
 
     const token = localStorage.getItem("token");
 
+    console.log("Submitting appointment data:", appointmentData); // Debugging output
+
     try {
-      const response = await fetch("http://localhost:3000/appointement", 
-      {
+      const response = await fetch("http://localhost:3000/appointement", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +168,10 @@ export default function BookingAppointment() {
                     {timeslot?.map((item, index) => (
                       <h2
                         key={index}
-                        onClick={() => setSelectedTimeSlot(item.time)}
+                        onClick={() => {
+                          console.log("Selected time slot:", item.time); // Debugging output
+                          setSelectedTimeSlot(item.time);
+                        }}
                         className={`p-2 border cursor-pointer text-center hover:bg-primary hover:text-white rounded-full ${
                           item.time === selectedTimeSlot &&
                           "bg-primary text-white"
@@ -224,7 +233,9 @@ export default function BookingAppointment() {
                               selectedService === services.ServiceId &&
                               "bg-primary text-white"
                             }`}
-                            onClick={() => handleServiceChange(services.ServiceId)}
+                            onClick={() =>
+                              handleServiceChange(services.ServiceId)
+                            }
                           >
                             <span>
                               {services.ServiceName} - PKR{" "}

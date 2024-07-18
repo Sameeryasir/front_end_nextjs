@@ -7,7 +7,6 @@ import BookingAppointement from "../../employee/_component/BookingAppointement";
 import { fetchService } from "@/app/service/Service";
 
 export default function ShopDetail({ shop }) {
-
   return (
     <div className="border border-gray-300 p-4 rounded-lg">
       <div className="md:flex gap-4 items-center">
@@ -35,10 +34,14 @@ export default function ShopDetail({ shop }) {
               </h2>
             )}
           </div>
-          <div className='flex flex-col gap-5 items-center'>
-            <h2 className='flex gap-1 text-xl text-primary'><User /> {shop?.Owner} </h2>
-            <h2 className='flex gap-2 text-xl text-gray-500'><Clock /> Available 8:00 AM to 10:PM </h2>
-            <BookingAppointement />
+          <div className="flex flex-col gap-5 items-center">
+            <h2 className="flex gap-1 text-xl text-primary">
+              <User /> {shop?.Owner}{" "}
+            </h2>
+            <h2 className="flex gap-2 text-xl text-gray-500">
+              <Clock /> Available 8:00 AM to 10:PM{" "}
+            </h2>
+            <BookingAppointement shop={shop} />
           </div>
         </div>
       </div>
