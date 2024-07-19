@@ -1,10 +1,7 @@
-import React from "react";
-import Bookings from "./_components/bookings";
-import Admin from "./_components/admin";
+import React from 'react'
+
 export default function page() {
   return (
-    <>
-      <h1></h1>
-    </>
-  );
+    <div></div>
+  )
 }
