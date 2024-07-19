@@ -1,22 +1,32 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import { Calendar, Clock, MapPin, User } from "lucide-react";
 import CancelAppointement from "./CancelAppointement";
-
+import { useState } from "react";
 export default function BookingList({ app }) {
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+
   if (!app) {
     console.error("Appointment is not available");
     return null;
   }
-const onDeleteBooking=(app)=>{
-  console.log(app)
-}
+
+  const handleAppointmentClick = (AppointmentId) => {
+    setSelectedAppointmentId(AppointmentId);
+    console.log(`Appointment ID: ${AppointmentId}`);
+  };
+
+
+  
+
   return (
-    <div className="space-y-4 px-4 md:px-0 ">
+    <div className="space-y-4 px-4 md:px-0">
       {app?.map((booking) => (
         <div
           key={booking.id}
           className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl"
+          onClick={() => handleAppointmentClick(booking.AppointmentId)}
         >
           <div className="md:flex">
             <div className="md:flex-shrink-0">
@@ -35,8 +45,8 @@ const onDeleteBooking=(app)=>{
                 <div className="uppercase tracking-wide text-sm text-primary font-semibold">
                   {booking?.shop?.Name}
                 </div>
-                <p className="flex gap-2 mt-2  text-gray-500 items-center">
-                  <MapPin className="text-primary"/> {booking?.shop?.Address}
+                <p className="flex gap-2 mt-2 text-gray-500 items-center">
+                  <MapPin className="text-primary" /> {booking?.shop?.Address}
                 </p>
                 <p className="mt-2 text-gray-500 flex gap-2 items-center">
                   <User className="text-primary" /> {booking?.employee?.Name}
@@ -49,7 +59,9 @@ const onDeleteBooking=(app)=>{
                 </p>
               </div>
               <div className="mt-4 md:mt-0 md:self-end">
-                <CancelAppointement onContinueClick={()=>onDeleteBooking(app)}/>
+                <CancelAppointement
+                 AppointmentId={selectedAppointmentId}
+                />
               </div>
             </div>
           </div>

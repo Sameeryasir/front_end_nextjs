@@ -2,12 +2,15 @@
 import React, { useEffect, useState } from "react";
 import Bookings from "../_components/bookings";
 import { fetchAppointements } from "@/app/service/appointement";
+import { fetchAppointementbyAdmin } from "@/app/service/appbyUser";
 export default function BookingPage() {
   const [appointement,Setappointements]=useState([]);
   useEffect(()=>{
+    Setappointements([])
     const fetchData = async ()=>{
+      const token = localStorage.getItem("token");
       try{
-        const response = await fetchAppointements();
+        const response = await fetchAppointementbyAdmin();
         Setappointements(response);
       } 
       catch(error){
