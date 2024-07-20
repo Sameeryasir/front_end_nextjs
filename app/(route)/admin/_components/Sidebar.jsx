@@ -20,7 +20,7 @@ export default function Sidebar() {
         </li>
         <li className="p-4">
             <a href='/admin/shop'>Shops</a>
-       i </li>
+        </li>
         <li className="p-4">
             <a>Inventory</a>
         </li>
