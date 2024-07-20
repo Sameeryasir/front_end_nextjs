@@ -2,7 +2,7 @@
 import React from 'react'
 import { useState,useEffect } from 'react';
 import { fetchshopsByUserId } from '@/app/service/getshopsbyUser';
-import Shop from '@/app/_components/Shop';
+import Shops from '../_components/Shops';
 export default function page() {
     const [shops, Setshops] = useState([]);
   useEffect(() => {
@@ -19,6 +19,6 @@ export default function page() {
     fetchdata();
   }, []);
   return (
-    <div><Shop shops={shops}/></div>
+    <div><Shops shops={shops}/></div>
   )
 }

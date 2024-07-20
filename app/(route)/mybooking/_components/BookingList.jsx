@@ -1,28 +1,44 @@
 "use client";
-import React from "react";
+import React, { useState ,useEffect} from "react";
 import Image from "next/image";
 import { Calendar, Clock, MapPin, User } from "lucide-react";
 import CancelAppointement from "./CancelAppointement";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { updatebyId } from "@/app/service/Update";
+import Accept from "../../admin/_components/Accept";
+
 export default function BookingList({ app }) {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-
+  const [apps,SetApps]=useState();
+  const handleAppointmentClick = (AppointmentId) => {
+    setSelectedAppointmentId(AppointmentId);
+    console.log(`Appointment ID: ${AppointmentId}`);
+ 
+  };
+  useEffect(() => {
+    SetApps();
+    const fetchdata = async () => {
+      try {
+        const response = await updatebyId(selectedAppointmentId);
+        SetApps(response);
+      } catch (error) {
+        console.error("error fetching data", error);
+      }
+    };
+    fetchdata();
+  }, []);
   if (!app) {
     console.error("Appointment is not available");
     return null;
   }
-
-  const handleAppointmentClick = (AppointmentId) => {
-    setSelectedAppointmentId(AppointmentId);
-    console.log(`Appointment ID: ${AppointmentId}`);
-  };
+  
 
   return (
     <div className="space-y-4 px-4 md:px-0">
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         {app?.map((booking) => (
           <div
-            key={booking.id}
+            key={booking.AppointmentId}
             className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl"
             onClick={() => handleAppointmentClick(booking.AppointmentId)}
           >
@@ -56,13 +72,14 @@ export default function BookingList({ app }) {
                     <Calendar className="text-primary" /> {booking?.date}
                   </p>
                 </div>
-                <div className="mt-4 md:mt-0 md:self-end">
+                <div className="mt-4 md:mt-0 flex flex-col gap-2">
                   <CancelAppointement AppointmentId={selectedAppointmentId} />
+                  <Accept AppointmentId={selectedAppointmentId}/>
                 </div>
               </div>
             </div>
           </div>
-      ))}
+        ))}
       </div>
     </div>
   );
