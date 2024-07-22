@@ -2,6 +2,7 @@
 import { fetchAppointementbyAdmin } from '@/app/service/appbyUser';
 import React, { useEffect, useState } from 'react'
 import BookingList from '../../mybooking/_components/BookingList';
+import Appointment from './_component/Appointement';
 
 export default function page() {
     const [app, SetAppointements] = useState([]);
@@ -19,6 +20,6 @@ export default function page() {
       fetchdata();
     }, []);
     return (
-    <div><BookingList app={app}/> </div>
+    <div><Appointment app={app}/> </div>
   )
 }

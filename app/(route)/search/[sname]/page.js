@@ -36,22 +36,22 @@ export default function Search() {
     <div>
       <Shop shops={shops} />
       <div className="flex justify-center mt-4">
-    <button
-      className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-l ${
-        page <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'
-      }`}
-      onClick={() => handlePageChange(page - 1)}
-      disabled={page <= 1}
-    >
-      Previous Page
-    </button>
-    <button
-      className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-r hover:bg-gray-300`}
-      onClick={() => handlePageChange(page + 1)}
-    >
-      Next Page
-    </button>
-  </div>
+        <button
+          className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-l ${
+            page <= 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-300"
+          }`}
+          onClick={() => handlePageChange(page - 1)}
+          disabled={page <= 1}
+        >
+          Previous Page
+        </button>
+        <button
+          className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-r hover:bg-gray-300`}
+          onClick={() => handlePageChange(page + 1)}
+        >
+          Next Page
+        </button>
+      </div>
     </div>
   );
 }

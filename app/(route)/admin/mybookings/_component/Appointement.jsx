@@ -1,21 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Clock, DollarSignIcon, MapPin, Server, Sigma, User } from "lucide-react";
-import CancelAppointement from "./CancelAppointement";
-import { Button } from "@/components/ui/button";
+import { Calendar, Clock, DollarSignIcon, MapPin, Server, User } from "lucide-react";
+import CancelAppointment from "@/app/(route)/mybooking/_components/CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
-import Accept from "../../admin/_components/Accept";
-
-export default function BookingList({ app }) {
+import Accept from "../../_components/Accept";
+export default function Appointment({ app }) {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [apps, SetApps] = useState();
+
   const handleAppointmentClick = (AppointmentId) => {
     setSelectedAppointmentId(AppointmentId);
     console.log(`Appointment ID: ${AppointmentId}`);
   };
+
   useEffect(() => {
-    SetApps();
     const fetchdata = async () => {
       try {
         const response = await updatebyId(selectedAppointmentId);
@@ -24,8 +23,11 @@ export default function BookingList({ app }) {
         console.error("error fetching data", error);
       }
     };
-    fetchdata();
-  }, []);
+    if (selectedAppointmentId) {
+      fetchdata();
+    }
+  }, [selectedAppointmentId]);
+
   if (!app) {
     console.error("Appointment is not available");
     return null;
@@ -33,25 +35,25 @@ export default function BookingList({ app }) {
 
   return (
     <div className="space-y-4 px-4 md:px-0">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
         {app?.map((booking) => (
           <div
             key={booking.AppointmentId}
-            className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl"
+            className="bg-white rounded-xl shadow-md overflow-hidden"
             onClick={() => handleAppointmentClick(booking.AppointmentId)}
           >
             <div className="md:flex">
-              <div className="md:flex-shrink-0">
-                {booking?.shop?.publicURL && (
+              {booking?.shop?.publicURL && (
+                <div className="md:flex-shrink-0">
                   <Image
-                    className="h-full w-full object-cover md:w-48"
+                    className="h-auto w-full object-cover md:w-48"
                     src={booking?.shop?.publicURL}
                     alt="Shop's profile picture"
                     width={192}
                     height={192}
                   />
-                )}
-              </div>
+                </div>
+              )}
               <div className="p-4 flex flex-col justify-between">
                 <div>
                   <div className="uppercase tracking-wide text-sm text-primary font-semibold">
@@ -70,8 +72,7 @@ export default function BookingList({ app }) {
                     <Calendar className="text-primary" /> {booking?.date}
                   </p>
                   <p className="mt-2 text-gray-500 flex gap-2 items-center">
-                    <Server className="text-primary" />{" "}
-                    {booking?.service?.ServiceName}
+                    <Server className="text-primary" /> {booking?.service?.ServiceName}
                   </p>
                   <p className="mt-2 text-gray-500 flex gap-2 items-center">
                     <DollarSignIcon className="text-primary" />
@@ -84,11 +85,12 @@ export default function BookingList({ app }) {
                       : "Price not available"}
                   </p>
                 </div>
-                <div className="mt-4 md:mt-0 flex flex-col gap-2">
-                  <CancelAppointement AppointmentId={selectedAppointmentId} />
-                </div>
               </div>
             </div>
+            <div className="mt-4 md:mt-0 flex gap-2 px-3 pb-3">
+                  <CancelAppointment AppointmentId={selectedAppointmentId} />
+                  <Accept AppointmentId={selectedAppointmentId} />
+                </div>
           </div>
         ))}
       </div>

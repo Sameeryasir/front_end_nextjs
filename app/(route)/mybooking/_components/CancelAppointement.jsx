@@ -44,13 +44,13 @@ export default function CancelAppointment({ AppointmentId }) {
   };
 
   return (
-    <div>
+    <div className="w-full">
       {isDeleted ? (
         <BookingList app={app}/>
       ) : (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="mt-2 text-red-500 border border-red-500 rounded-md px-4 py-1 hover:bg-red-500 hover:text-white transition-all duration-300 ease-in-out">
+            <button className="w-full p-2 text-red-500 border border-red-500 rounded-md px-4 hover:bg-red-500 hover:text-white transition-all duration-300 ease-in-out">
               Cancel Appointment
             </button>
           </AlertDialogTrigger>

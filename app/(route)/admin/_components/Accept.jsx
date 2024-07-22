@@ -19,7 +19,7 @@ export default function Accept({ AppointmentId }) {
   };
 
   return (
-    <Button onClick={handleSubmit} className="p-2 px-4 border border-primary bg-white text-primary hover:bg-primary hover:text-white">
+    <Button onClick={handleSubmit} className="w-full p-2 px-4 border border-primary bg-white text-primary hover:bg-primary hover:text-white">
       Accept
     </Button>
   );

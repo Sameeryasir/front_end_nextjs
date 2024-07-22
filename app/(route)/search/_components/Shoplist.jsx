@@ -22,6 +22,7 @@ export default function Shoplist({}) {
   const [category, setCategory] = useState([]);
   const params = usePathname();
   const categories = params.split("/")[2];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -35,39 +36,34 @@ export default function Shoplist({}) {
     fetchData();
   }, []);
 
-  console.log(params);
-
   return (
     <div className="mt-5 flex flex-col">
       <Command>
-        <CommandInput placeholder="Type a command or search..." />
         <CommandList className="overflow-visible">
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
+          <CommandGroup>
             {category &&
-              category.map((categories) => (
-                <>
-                  <CommandItem>
-                    <Link
-                      a
-                      href={"/search/" + categories.Slug+ "-" + categories.id}
-                      className={`p-2 flex gap-2
+              category.map((categoryItem) => (
+                <CommandItem key={categoryItem.id}>
+                  <Link
+                    href={"/search/" + categoryItem.Slug + "-" + categoryItem.id}
+                    className={`p-2 flex gap-2 items-center
                       text-[14px] text-primary rounded-md cursor-pointer w-full
-                      ${categories == categories.Name}
-                      `}
-                    >
-                      {categories.iconUrl && (
-                        <Image
-                          src={categories.iconUrl}
-                          alt="icon"
-                          width={40}
-                          height={40}
-                        />
-                      )}
-                      <label className="mt-2">{categories.Name}</label>
-                    </Link>
-                  </CommandItem>
-                </>
+                      ${categories == categoryItem.Name ? "bg-gray-200" : ""}
+                      hover:bg-gray-100 transition-colors duration-200`}
+                  >
+                    {categoryItem.iconUrl && (
+                      <Image
+                        src={categoryItem.iconUrl}
+                        alt="icon"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 md:w-8 md:h-8"
+                      />
+                    )}
+                    <label className="mt-2 text-sm md:text-base">{categoryItem.Name}</label>
+                  </Link>
+                </CommandItem>
               ))}
           </CommandGroup>
         </CommandList>
