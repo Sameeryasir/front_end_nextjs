@@ -1,50 +1,72 @@
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { User, Clock, NotebookPen } from "lucide-react";
-import BookingAppointement from "../../employee/_component/BookingAppointement";
-import { fetchService } from "@/app/service/Service";
+import { MapPin, User } from "lucide-react";
+import React from "react";
+import BookingAppointment from "../../employee/_component/BookingAppointement";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
-export default function ShopDetail({ shop }) {
+const ShopDetail = ({ shop }) => {
+  
   return (
-    <div className="border border-gray-300 p-4 rounded-lg">
-      <div className="md:flex gap-4 items-center">
-        {shop?.publicURL && (
-          <Image
-            src={shop.publicURL}
-            width={150}
-            height={150}
-            className="rounded-full h-[150px] object-cover"
-            alt="shop-image"
-          />
-        )}
-        <div className="flex justify-between items-center w-full mt-4 md:mt-0">
-          <div className="flex flex-col items-baseline">
-            {shop?.category && (
-              <h2 className="text-primary p-1 px-3 text-lg bg-purple-100 rounded-full">
-                {shop.category.Name}
-              </h2>
-            )}
-            <h2 className="text-[40px] font-bold">{shop.Name}</h2>
-            {shop?.Address && (
-              <h2 className="flex gap-2 text-lg text-gray-500 items-center">
-                <MapPin />
-                {shop.Address}
-              </h2>
-            )}
-          </div>
-          <div className="flex flex-col gap-5 items-center">
-            <h2 className="flex gap-1 text-xl text-primary">
-              <User /> {shop?.Owner}{" "}
-            </h2>
-            <h2 className="flex gap-2 text-xl text-gray-500">
-              <Clock /> Available 10:00 AM to 6:30 PM{" "}
-            </h2>
-            <BookingAppointement shop={shop} />
-          </div>
+    <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap transition-transform duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl hover:bg-gray-50">
+      <div className="w-full md:w-1/2 mb-4 md:mb-0">
+        <div className="relative">
+          {shop?.publicURL && (
+            <img
+              src={shop?.publicURL}
+              alt={shop?.Name}
+              className="w-full h-64 md:h-96 object-cover rounded-lg"
+            />
+          )}
+        </div>
+      </div>
+      <div className="w-full md:w-1/2 p-4 md:p-6">
+        <p className="text-gray-600 mb-2">WELCOME TO</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">{shop?.Name}</h1>
+        <div className="mb-4">
+          <p className="text-gray-700 mb-2">
+            <span className="inline-flex items-center">
+              <div className="flex gap-2 mt-2 text-gray-500">
+                <MapPin className="text-primary" />
+                <h2 className="text-lg md:text-xl font-semibold"> {shop?.Address}</h2>
+              </div>
+            </span>
+          </p>
+          <p className="flex gap-2 mt-2 text-gray-500">
+            <User className="text-primary" />
+            <h2 className="text-lg md:text-xl font-semibold">{shop?.Owner}</h2>
+          </p>
+          <p className="text-gray-600">{shop?.timing}</p>
+        </div>
+        <div className="mb-4">
+          <p className="text-gray-700 mb-6">{shop?.Description}</p>
+        </div>
+        <div className="w-full flex justify-center md:justify-start">
+          <BookingAppointment />
+        </div>
+      </div>
+      <div className="w-full mt-8">
+        <div className="flex flex-wrap justify-around">
+          {shop?.service?.map((service) => (
+            
+            <div
+              key={service.ServiceId}
+              className="text-center w-1/2 sm:w-1/4 lg:w-1/5 mb-4 transition-transform duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hover:bg-gray-100 rounded-lg p-4"
+            >
+              {service?.publicURL && (
+                <img
+                  src={service?.publicURL}
+                  alt={service.ServiceName}
+                  className="w-12 h-12 mx-auto"
+                />
+              )}
+              <p className="text-lg font-semibold mt-2">{service.ServiceName}</p>
+              <p className="text-gray-600">Rs{service.ServicePrice.toFixed(2)}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default ShopDetail;

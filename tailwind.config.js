@@ -18,6 +18,7 @@ module.exports = {
         "2xl": "1400px",
       },
     },
+    darkMode:'class',
     plugins: [require("tw-elements/plugin.cjs")],
     darkMode: "class",
     extend: {
