@@ -5,8 +5,7 @@ import { useState, useEffect } from "react";
 import { fetchShopsById } from "@/app/service/shops";
 import Shopdetail from "../_component/Shopdetail";
 import Employeelist from "../_component/Employeelist";
-import ShopDescription from "../_component/ShopDescription";
-import Detail from "../_component/Shopdetail";
+
 export default function details() {
   const [shop, setShop] = useState([]);
   const params = usePathname();

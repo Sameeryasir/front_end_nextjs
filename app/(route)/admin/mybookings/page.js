@@ -1,7 +1,6 @@
 'use client';
 import { fetchAppointementbyAdmin } from '@/app/service/appbyUser';
 import React, { useEffect, useState } from 'react'
-import BookingList from '../../mybooking/_components/BookingList';
 import Appointment from './_component/Appointement';
 
 export default function page() {
@@ -9,10 +8,10 @@ export default function page() {
     useEffect(() => {
       SetAppointements([]);
       const fetchdata = async () => {
-        const token = localStorage.getItem("token");
         try {
           const response = await fetchAppointementbyAdmin();
           SetAppointements(response);
+          console.log(response);
         } catch (error) {
           console.error("error fetching data", error);
         }

@@ -12,101 +12,135 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, NotebookPen } from "lucide-react";
+import {
+  CalendarDays,
+  Clock,
+  NotebookPen,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEmployees } from "@/app/service/employee";
 
-export default function BookingAppointment({shop}) {
+export default function BookingAppointment({ shop }) {
   const [date, setDate] = useState(new Date());
   const [timeslot, setTimeslot] = useState([]);
   const [service, setService] = useState([]);
   const [employee, setEmployee] = useState([]);
-  const [selectedService, setSelectedService] = useState(""); // Change to a single service
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
-  const [serviceDropdownVisible, setServiceDropdownVisible] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
+    useState(false);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetchService();
-        const resp = await fetchEmployees();
         setService(response);
         setEmployee(resp);
       } catch (error) {
         console.error("Error fetching data", error);
       }
     };
-    fetchData(); // Call fetchData inside useEffect
+    fetchData();
   }, []);
 
   useEffect(() => {
     getTime();
+    adjustInitialDate();
   }, []);
 
   const getTime = () => {
     const timelist = [];
 
-    // Generate timeslots from 10 AM to 6:30 PM
     for (let i = 10; i <= 18; i++) {
-      // 18 corresponds to 6 PM in 24-hour format
       if (i === 12) {
-        timelist.push({
-          time: "12:00 PM",
-        });
-        timelist.push({
-          time: "12:30 PM",
-        });
+        timelist.push({ time: "12:00 PM" });
+        timelist.push({ time: "12:30 PM" });
       } else if (i < 12) {
-        timelist.push({
-          time: i + ":00 AM",
-        });
-        timelist.push({
-          time: i + ":30 AM",
-        });
+        timelist.push({ time: i + ":00 AM" });
+        timelist.push({ time: i + ":30 AM" });
       } else {
         let hour = i - 12;
-        timelist.push({
-          time: hour + ":00 PM",
-        });
-        timelist.push({
-          time: hour + ":30 PM",
-        });
+        timelist.push({ time: hour + ":00 PM" });
+        timelist.push({ time: hour + ":30 PM" });
       }
     }
 
     setTimeslot(timelist);
   };
 
+  const adjustInitialDate = () => {
+    const currentDate = new Date();
+    const currentTime = currentDate.getHours() * 60 + currentDate.getMinutes();
+    const openingTime = 10 * 60; // 10:00 AM in minutes
+    const closingTime = 18 * 60 + 30; // 6:30 PM in minutes
+
+    if (currentTime > closingTime) {
+      const nextDay = new Date();
+      nextDay.setDate(currentDate.getDate() + 1);
+      setDate(nextDay);
+    } else if (currentTime < openingTime) {
+      setDate(currentDate);
+    } else {
+      setDate(currentDate);
+    }
+  };
+
   const isPastDay = (day) => {
-    return day < new Date().setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentTime = new Date();
+    const currentMinutes =
+      currentTime.getHours() * 60 + currentTime.getMinutes();
+    const openingMinutes = 10 * 60;
+
+    if (
+      today.toDateString() === day.toDateString() &&
+      currentMinutes >= openingMinutes
+    ) {
+      return true;
+    }
+
+    return day < today;
   };
 
   const handleServiceChange = (serviceId) => {
-    setSelectedService(serviceId === selectedService ? "" : serviceId);
+    setSelectedServices((prevSelectedServices) =>
+      prevSelectedServices.includes(serviceId)
+        ? prevSelectedServices.filter((id) => id !== serviceId)
+        : [...prevSelectedServices, serviceId]
+    );
   };
 
   const calculateTotalPrice = () => {
-    const selectedServiceData = service.find(
-      (s) => s.ServiceId === selectedService
-    );
-    return selectedServiceData ? selectedServiceData.ServicePrice : 0;
+    return selectedServices.reduce((total, serviceId) => {
+      const selectedServiceData = service.find(
+        (s) => s.ServiceId === serviceId
+      );
+      return (
+        total + (selectedServiceData ? selectedServiceData.ServicePrice : 0)
+      );
+    }, 0);
   };
 
   const handleSubmit = async () => {
     const appointmentData = {
       date: date.toISOString().split("T")[0],
       Time: selectedTimeSlot,
-      ServiceId: selectedService,
       EmployeeId: selectedEmployee,
       ShopId: shop?.ShopId,
+      ServicesId: selectedServices,
       Price: calculateTotalPrice(),
     };
 
     const token = localStorage.getItem("token");
 
-    console.log("Submitting appointment data:", appointmentData); // Debugging output
+    console.log("Submitting appointment data:", appointmentData);
 
     try {
       const response = await fetch("http://localhost:3000/appointement", {
@@ -119,174 +153,153 @@ export default function BookingAppointment({shop}) {
       });
 
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        if (response.status === 400) {
+          setIsDialogOpen(false);
+          setIsErrorDialogOpen(true);
+        } else {
+          throw new Error("Network response was not ok");
+        }
+      } else {
+        const data = await response.json();
+        console.log("Appointment successfully added:", data);
+        setErrorMessage("");
+        setIsDialogOpen(false);
+        setIsConfirmationDialogOpen(true);
       }
-
-      const data = await response.json();
-      console.log("Appointment successfully added:", data);
-      setIsDialogOpen(false); // Close the dialog after successful submission
     } catch (error) {
       console.error("Error adding appointment:", error);
+      if (!errorMessage) {
+        setErrorMessage("An error occurred while booking the appointment.");
+        setIsDialogOpen(false);
+        setIsErrorDialogOpen(true);
+      }
     }
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger>
-        <Button className="flex gap-2 w-full">
-          <NotebookPen />
-          Book Appointment
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Book Appointment</DialogTitle>
-          <DialogDescription>
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Calendar */}
-                <div className="flex flex-col gap-3 items-baseline">
-                  <h2 className="flex gap-2 items-center">
-                    <CalendarDays className="text-primary h-5 w-5" />
-                    Select Date
-                  </h2>
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    disabled={isPastDay}
-                    className="rounded-md border"
-                  />
-                </div>
-                {/* Time */}
-                <div>
-                  <h2 className="flex gap-2 items-center mb-3">
-                    <Clock className="text-primary h-5 w-5" />
-                    Select Time
-                  </h2>
-                  <div className="grid grid-cols-3 gap-2 border rounded-lg p-5">
-                    {timeslot?.map((item, index) => (
-                      <h2
-                        key={index}
-                        onClick={() => {
-                          console.log("Selected time slot:", item.time); // Debugging output
-                          setSelectedTimeSlot(item.time);
-                        }}
-                        className={`p-2 border cursor-pointer text-center hover:bg-primary hover:text-white rounded-full ${
-                          item.time === selectedTimeSlot &&
-                          "bg-primary text-white"
-                        }`}
-                      >
-                        {item.time}
-                      </h2>
-                    ))}
+    <div>
+      {errorMessage && (
+        <div className="mt-4 text-red-500 text-center">{errorMessage}</div>
+      )}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger>
+          <Button className="flex gap-2 w-full">
+            <NotebookPen />
+            Book Appointment
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Book Appointment</DialogTitle>
+            <DialogDescription>
+              <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-3 items-baseline">
+                    <h2 className="flex gap-2 items-center">
+                      <CalendarDays className="text-primary h-5 w-5" />
+                      Select Date
+                    </h2>
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      disabled={isPastDay}
+                      className="rounded-md border"
+                    />
+                  </div>
+                  <div>
+                    <h2 className="flex gap-2 items-center mb-3">
+                      <Clock className="text-primary h-5 w-5" />
+                      Select Time
+                    </h2>
+                    <div className="grid grid-cols-3 gap-2 border rounded-lg p-5">
+                      {timeslot?.map((item, index) => (
+                        <h2
+                          key={index}
+                          onClick={() => setSelectedTimeSlot(item.time)}
+                          className={`p-2 border cursor-pointer text-center hover:bg-primary hover:text-white rounded-full ${
+                            item.time === selectedTimeSlot &&
+                            "bg-primary text-white"
+                          }`}
+                        >
+                          {item.time}
+                        </h2>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-              {/* Service and Employee Dropdowns */}
-              <div className="flex mt-4 gap-4">
-                <div className="flex-1 animate-slide-in relative dropdown-container">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">
-                    Select Service
-                  </label>
-                  <div className="relative">
-                    <div
-                      className="block w-full p-2 border rounded-md cursor-pointer transition duration-300 ease-in-out"
-                      onClick={() =>
-                        setServiceDropdownVisible(!serviceDropdownVisible)
-                      }
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="truncate">
-                          {selectedService
-                            ? service.find(
-                                (s) => s.ServiceId === selectedService
-                              )?.ServiceName
-                            : "Select a service"}
-                        </span>
-                        <svg
-                          className={`h-5 w-5 text-gray-400 transform ${
-                            serviceDropdownVisible ? "rotate-180" : ""
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                          focusable="false"
+                <div className="flex mt-4 gap-4">
+                  <div className="flex-1">
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Select Services
+                    </label>
+                    <fieldset className="space-y-2">
+                      {service.map((services) => (
+                        <label
+                          key={services.ServiceId}
+                          className="flex items-start gap-4 cursor-pointer"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    {serviceDropdownVisible && (
-                      <div className="absolute z-10 bg-white border rounded-md mt-1 w-full max-h-56 overflow-auto shadow-lg">
-                        {service.map((services) => (
-                          <div
-                            key={services.ServiceId}
-                            className={`flex items-center p-2 hover:bg-primary hover:text-white cursor-pointer ${
-                              selectedService === services.ServiceId &&
-                              "bg-primary text-white"
-                            }`}
-                            onClick={() =>
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300"
+                            checked={selectedServices.includes(
+                              services.ServiceId
+                            )}
+                            onChange={() =>
                               handleServiceChange(services.ServiceId)
                             }
-                          >
-                            <span>
+                          />
+                          <div>
+                            <strong className="font-medium text-gray-900">
                               {services.ServiceName} - PKR{" "}
                               {services.ServicePrice}
-                            </span>
+                            </strong>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        </label>
+                      ))}
+                    </fieldset>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                      Select Employee
+                    </label>
+                    <select
+                      value={selectedEmployee}
+                      onChange={(e) => setSelectedEmployee(e.target.value)}
+                      className="block w-full p-2 border rounded-md"
+                      size="5"
+                    >
+                      <option value="" disabled>
+                        Select an employee
+                      </option>
+                      {shop?.employees?.map((employee) => {
+                        if (!employee.isPresent) return null;
+                        return (
+                          <option
+                            key={employee.EmployeeId}
+                            value={employee.EmployeeId}
+                          >
+                            {employee.Name}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                 </div>
-                <div className="flex-1 animate-slide-in">
-                  <label className="block mb-2 text-sm font-medium text-gray-700">
-                    Select Employee
-                  </label>
-                  <select
-                    value={selectedEmployee}
-                    onChange={(e) => setSelectedEmployee(e.target.value)}
-                    className="block w-full p-2 border rounded-md"
-                    size="5"
-                  >
-                    <option value="" disabled>
-                      Select an employee
-                    </option>
-                    {employee.map((employees) => (
-                      <option
-                        key={employees.EmployeeId}
-                        value={employees.EmployeeId} // Use ID instead of Name
-                      >
-                        {employees.Name}
-                      </option>
-                    ))}
-                  </select>
+                <div className="mt-4">
+                  <h2 className="text-lg font-medium">
+                    Total Price: PKR {calculateTotalPrice()}
+                  </h2>
                 </div>
               </div>
-              {/* Total Price */}
-              <div className="mt-4">
-                <h2 className="text-lg font-medium">
-                  Total Price: PKR {calculateTotalPrice()}
-                </h2>
-              </div>
-            </div>
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="sm:justify-end">
-          <>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end">
             <Button
               className="text-red-500"
               type="button"
               variant="outline"
-              onClick={() => setIsDialogOpen(false)} // Close the dialog
+              onClick={() => setIsDialogOpen(false)}
             >
               Close
             </Button>
@@ -296,15 +309,61 @@ export default function BookingAppointment({shop}) {
               disabled={
                 !date ||
                 !selectedTimeSlot ||
-                !selectedService ||
+                selectedServices.length === 0 ||
                 !selectedEmployee
               }
             >
               Submit
             </Button>
-          </>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={isConfirmationDialogOpen}
+        onOpenChange={setIsConfirmationDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Appointment Confirmed</DialogTitle>
+            <DialogDescription>
+              <div className="flex flex-col items-center gap-4">
+                <CheckCircle className="text-green-500 h-12 w-12" />
+                <p>Your appointment has been successfully booked!</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              onClick={() => setIsConfirmationDialogOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Appointment Error</DialogTitle>
+            <DialogDescription>
+              <div className="flex flex-col items-center gap-4">
+                <AlertCircle className="text-red-500 h-12 w-12" />
+                <p>appointement is already booked for given time</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end">
+            <Button type="button" onClick={() => setIsErrorDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

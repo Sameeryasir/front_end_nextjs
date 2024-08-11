@@ -10,7 +10,6 @@ export async function CreateShop(shopData) {
     });
   
     if (!response.ok) {
-      // Handle errors
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to create shop');
     }

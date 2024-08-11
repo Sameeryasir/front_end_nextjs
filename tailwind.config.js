@@ -1,14 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
+  mode: 'jit',
   content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
     "./pages/**/*.{js,jsx}",
     "./components/**/*.{js,jsx}",
     "./app/**/*.{js,jsx}",
+    "./app/_components/Forms/**/*.{js,jsx}",
     "./src/**/*.{js,jsx}",
     "./src/**/*.{html,js}",
-    "./node_modules/tw-elements/js/**/*.js"
+    "./node_modules/tw-elements/js/**/*.js",
   ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
   prefix: "",
   theme: {
     container: {
@@ -18,7 +26,7 @@ module.exports = {
         "2xl": "1400px",
       },
     },
-    darkMode:'class',
+    darkMode: "class",
     plugins: [require("tw-elements/plugin.cjs")],
     darkMode: "class",
     extend: {

@@ -3,7 +3,6 @@ import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import EmployeeDetail from "../_component/EmployeeDetail";
 import { fetchEmployeesbyId } from "@/app/service/employee";
-import EmployeeDescription from "../_component/EmployeeDescription";
 
 export default function details() {
   const [employee, setEmployee] = useState([]);

@@ -1,21 +1,43 @@
+
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Clock, DollarSignIcon, MapPin, Server, Sigma, User } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSignIcon,
+  MapPin,
+  Server,
+  User,
+  X,
+} from "lucide-react";
 import CancelAppointement from "./CancelAppointement";
-import { Button } from "@/components/ui/button";
 import { updatebyId } from "@/app/service/Update";
-import Accept from "../../admin/_components/Accept";
+import withAuth from "@/app/withAuth";
 
-export default function BookingList({ app }) {
+const BookingList = ({ app }) => {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [apps, SetApps] = useState();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState("");
+
   const handleAppointmentClick = (AppointmentId) => {
     setSelectedAppointmentId(AppointmentId);
     console.log(`Appointment ID: ${AppointmentId}`);
   };
+
+  const handleImageClick = (url) => {
+    setModalImageUrl(url);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalImageUrl("");
+  };
+
   useEffect(() => {
-    SetApps();
     const fetchdata = async () => {
       try {
         const response = await updatebyId(selectedAppointmentId);
@@ -24,56 +46,106 @@ export default function BookingList({ app }) {
         console.error("error fetching data", error);
       }
     };
-    fetchdata();
-  }, []);
+    if (selectedAppointmentId) {
+      fetchdata();
+    }
+  }, [selectedAppointmentId]);
+
   if (!app) {
     console.error("Appointment is not available");
     return null;
   }
 
   return (
-    <div className="space-y-4 px-4 md:px-0">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        {app?.map((booking) => (
-          <div
-            key={booking.AppointmentId}
-            className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl"
-            onClick={() => handleAppointmentClick(booking.AppointmentId)}
-          >
-            <div className="md:flex">
-              <div className="md:flex-shrink-0">
-                {booking?.shop?.publicURL && (
-                  <Image
-                    className="h-full w-full object-cover md:w-48"
-                    src={booking?.shop?.publicURL}
-                    alt="Shop's profile picture"
-                    width={192}
-                    height={192}
-                  />
-                )}
-              </div>
-              <div className="p-4 flex flex-col justify-between">
-                <div>
-                  <div className="uppercase tracking-wide text-sm text-primary font-semibold">
-                    {booking?.shop?.Name}
+    <>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Shop
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Address
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Employee
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Time
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Service
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Price
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {app.map((booking) => (
+              <tr
+                key={booking.AppointmentId}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleAppointmentClick(booking.AppointmentId)}
+              >
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    {booking?.shop?.publicURL && (
+                      <Image
+                        className="h-10 w-10 rounded-full object-cover cursor-pointer"
+                        src={booking.shop.publicURL}
+                        alt="Shop's profile picture"
+                        width={80}
+                        height={40}
+                        onClick={() => handleImageClick(booking.shop.publicURL)}
+                      />
+                    )}
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {booking?.shop?.Name}
+                      </div>
+                    </div>
                   </div>
-                  <p className="flex gap-2 mt-2 text-gray-500 items-center">
-                    <MapPin className="text-primary" /> {booking?.shop?.Address}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <MapPin className="text-primary" />
+                    {booking?.shop?.Address}
                   </p>
-                  <p className="mt-2 text-gray-500 flex gap-2 items-center">
-                    <User className="text-primary" /> {booking?.employee?.Name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <User className="text-primary" />
+                    {booking?.employee?.Name}
                   </p>
-                  <p className="mt-2 text-gray-500 flex gap-2 items-center">
-                    <Clock className="text-primary" /> {booking?.Time}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <Clock className="text-primary" />
+                    {booking?.Time}
                   </p>
-                  <p className="mt-2 text-gray-500 flex gap-2 items-center">
-                    <Calendar className="text-primary" /> {booking?.date}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <Calendar className="text-primary" />
+                    {booking?.date}
                   </p>
-                  <p className="mt-2 text-gray-500 flex gap-2 items-center">
-                    <Server className="text-primary" />{" "}
-                    {booking?.service?.ServiceName}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
+                    <Server className="text-primary" />
+                    {booking?.services?.ServiceName}
                   </p>
-                  <p className="mt-2 text-gray-500 flex gap-2 items-center">
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-500 flex items-center gap-2">
                     <DollarSignIcon className="text-primary" />
                     {booking?.Price
                       ? new Intl.NumberFormat("en-IN", {
@@ -83,15 +155,38 @@ export default function BookingList({ app }) {
                         }).format(booking.Price)
                       : "Price not available"}
                   </p>
-                </div>
-                <div className="mt-4 md:mt-0 flex flex-col gap-2">
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   <CancelAppointement AppointmentId={selectedAppointmentId} />
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </div>
+
+      {/* Image Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
+          <div className="relative bg-white p-4 rounded-lg">
+            <button
+              className="right-2 text-gray-500 hover:text-primary"
+              onClick={closeModal}
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <Image
+              src={modalImageUrl}
+              alt="Larger view"
+              width={700} // Adjust as needed
+              height={700} // Adjust as needed
+              className="object-contain"
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
-}
+};
+
+export default withAuth(BookingList); // Wrap the component with withAuth HOC

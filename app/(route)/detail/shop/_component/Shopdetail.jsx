@@ -1,13 +1,42 @@
 import { MapPin, User } from "lucide-react";
 import React from "react";
+import Slider from "react-slick";
 import BookingAppointment from "../../employee/_component/BookingAppointement";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
+import Image from 'next/image'; 
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const ShopDetail = ({ shop }) => {
-  
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
+
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap transition-transform duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl hover:bg-gray-50">
+    <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap">
       <div className="w-full md:w-1/2 mb-4 md:mb-0">
         <div className="relative">
           {shop?.publicURL && (
@@ -41,29 +70,30 @@ const ShopDetail = ({ shop }) => {
           <p className="text-gray-700 mb-6">{shop?.Description}</p>
         </div>
         <div className="w-full flex justify-center md:justify-start">
-          <BookingAppointment />
+          <BookingAppointment shop={shop}/>
         </div>
       </div>
       <div className="w-full mt-8">
-        <div className="flex flex-wrap justify-around">
-          {shop?.service?.map((service) => (
-            
+        <Slider {...settings}>
+          {shop?.services?.map((service) => (
             <div
               key={service.ServiceId}
-              className="text-center w-1/2 sm:w-1/4 lg:w-1/5 mb-4 transition-transform duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg hover:bg-gray-100 rounded-lg p-4"
+              className="text-center mb-4 rounded-lg p-4"
             >
               {service?.publicURL && (
-                <img
+                <Image
                   src={service?.publicURL}
                   alt={service.ServiceName}
                   className="w-12 h-12 mx-auto"
+                  width={200}
+                  height={200}
                 />
               )}
-              <p className="text-lg font-semibold mt-2">{service.ServiceName}</p>
+              <p className="text-lg font-semibold mt-2">{service?.ServiceName}</p>
               <p className="text-gray-600">Rs{service.ServicePrice.toFixed(2)}</p>
             </div>
           ))}
-        </div>
+        </Slider>
       </div>
     </div>
   );

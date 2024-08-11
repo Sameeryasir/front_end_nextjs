@@ -21,19 +21,7 @@ export default function MyBookings() {
   }, []);
   return (
     <div className="px-4 sm:px-10 mt-10">
-      <h2 className="font-bold text-2xl">Bookings</h2>
-      <Tabs defaultValue="account" className="w-full mt-5">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="expired">Expired</TabsTrigger>
-        </TabsList>
-        <TabsContent value="upcoming">
-          <BookingList app={app}/>
-        </TabsContent>
-        <TabsContent value="expired">
-          <BookingList  />
-        </TabsContent>
-      </Tabs>
+      <BookingList app={app}/>
     </div>
   );
 }

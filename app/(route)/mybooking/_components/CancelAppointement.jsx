@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DeleteAppointementsById } from "@/app/service/deleteAppointements";
 import BookingList from "./BookingList";
-export default function CancelAppointment({ AppointmentId }) {
+export default function Cancel({ AppointmentId }) {
   const [isDeleted, setIsDeleted] = useState(false);
   const [app, SetAppointements] = useState([]);
   useEffect(() => {
@@ -32,6 +32,7 @@ export default function CancelAppointment({ AppointmentId }) {
   const handleSubmit = async () => {
     try {
       const { success, data, error } = await DeleteAppointementsById(AppointmentId);
+      window.location.reload();
 
       if (success) {
         setIsDeleted(true);
@@ -51,7 +52,7 @@ export default function CancelAppointment({ AppointmentId }) {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="w-full p-2 text-red-500 border border-red-500 rounded-md px-4 hover:bg-red-500 hover:text-white transition-all duration-300 ease-in-out">
-              Cancel Appointment
+              Cancel 
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>

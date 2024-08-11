@@ -26,7 +26,7 @@ export default function Search() {
     };
 
     fetchData();
-  }, [params, page, limit]); // Include page and limit in dependency array
+  }, [params, page, limit]); 
 
   const handlePageChange = (newPage) => {
     setPage(newPage);

@@ -5,9 +5,13 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 const schema = z.object({
-  FullName: z.string().min(3).max(50).nonempty(),
+  FullName:z.string()
+  .min(3, " Name must be at least 3 characters long")
+  .max(50, "Name must be at most 50 characters long")
+  .nonempty("Name is required")
+  .regex(/^[a-zA-Z\s]+$/, "Name can only contain alphabetic characters and spaces"),
   Email: z.string().email(),
-  Password: z.string().min(6),
+  Password: z.string().min(6).max(15),
   UserType: z.string().min(3),
 });
 
@@ -42,7 +46,6 @@ const SignupForm = () => {
       router.push('/logIn/')
     } catch (error) {
       console.error("Error signing up:", error.message);
-      // Handle error (e.g., show error message)
     }
   };
 
@@ -53,7 +56,7 @@ const SignupForm = () => {
   >
     <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
     <div className="flex flex-col">
-      <label className="mb-1 text-md text-gray-700 font-semibold">Full Name:</label>
+      <label className="mb-1 text-md text-gray-700 font-semibold"> Name:</label>
       <input
         {...register("FullName")}
         className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition duration-300"
