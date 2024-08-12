@@ -2,11 +2,13 @@ import { MapPin, User } from "lucide-react";
 import React from "react";
 import Slider from "react-slick";
 import BookingAppointment from "../../employee/_component/BookingAppointement";
-import Image from 'next/image'; 
+import Image from "next/image";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-const ShopDetail = ({ shop }) => {
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+const ShopDetail = ({ shop, isValid }) => {
   const settings = {
     dots: true,
     infinite: true,
@@ -35,6 +37,9 @@ const ShopDetail = ({ shop }) => {
     ],
   };
 
+
+  const position = shop?.location || [33.59142, 73.05257]; 
+
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap">
       <div className="w-full md:w-1/2 mb-4 md:mb-0">
@@ -56,7 +61,9 @@ const ShopDetail = ({ shop }) => {
             <span className="inline-flex items-center">
               <div className="flex gap-2 mt-2 text-gray-500">
                 <MapPin className="text-primary" />
-                <h2 className="text-lg md:text-xl font-semibold"> {shop?.Address}</h2>
+                <h2 className="text-lg md:text-xl font-semibold">
+                  {shop?.Address}
+                </h2>
               </div>
             </span>
           </p>
@@ -70,9 +77,11 @@ const ShopDetail = ({ shop }) => {
           <p className="text-gray-700 mb-6">{shop?.Description}</p>
         </div>
         <div className="w-full flex justify-center md:justify-start">
-          <BookingAppointment shop={shop}/>
+          {isValid && <BookingAppointment shop={shop} />}
         </div>
       </div>
+      
+      {/* Slider for services */}
       <div className="w-full mt-8">
         <Slider {...settings}>
           {shop?.services?.map((service) => (
@@ -89,11 +98,35 @@ const ShopDetail = ({ shop }) => {
                   height={200}
                 />
               )}
-              <p className="text-lg font-semibold mt-2">{service?.ServiceName}</p>
-              <p className="text-gray-600">Rs{service.ServicePrice.toFixed(2)}</p>
+              <p className="text-lg font-semibold mt-2">
+                {service?.ServiceName}
+              </p>
+              <p className="text-gray-600">
+                Rs{service.ServicePrice.toFixed(2)}
+              </p>
             </div>
           ))}
         </Slider>
+      </div>
+
+      {/* Map Section */}
+      <div className="w-full mt-8">
+        <MapContainer
+          center={position}
+          zoom={13}
+          style={{ height: "300px", width: "100%" }}
+          className="rounded-lg"
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <Marker position={position}>
+            <Popup>
+              {shop?.Name}<br />{shop?.Address}
+            </Popup>
+          </Marker>
+        </MapContainer>
       </div>
     </div>
   );

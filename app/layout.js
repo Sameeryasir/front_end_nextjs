@@ -2,6 +2,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
+import AuthenticationProvider from "@/app/context/authentication";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -11,7 +13,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <AuthenticationProvider>
+      <html lang="en">
       <body className={inter.className}>
         <Header />
         <div className="flex flex-col min-h-screen">
@@ -20,5 +23,7 @@ export default function RootLayout({ children }) {
         </div>
       </body>
     </html>
+    </AuthenticationProvider>
+    
   );
 }

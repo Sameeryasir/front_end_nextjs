@@ -129,6 +129,8 @@ export default function BookingAppointment({ shop }) {
   };
 
   const handleSubmit = async () => {
+    let sound = new Audio("/sounds/answer-tone.wav");
+    let sound2 = new Audio("/sounds/error.mp3");
     const appointmentData = {
       date: date.toISOString().split("T")[0],
       Time: selectedTimeSlot,
@@ -153,6 +155,7 @@ export default function BookingAppointment({ shop }) {
       });
 
       if (!response.ok) {
+        sound2.play();
         if (response.status === 400) {
           setIsDialogOpen(false);
           setIsErrorDialogOpen(true);
@@ -160,6 +163,7 @@ export default function BookingAppointment({ shop }) {
           throw new Error("Network response was not ok");
         }
       } else {
+        sound.play();
         const data = await response.json();
         console.log("Appointment successfully added:", data);
         setErrorMessage("");
@@ -233,7 +237,7 @@ export default function BookingAppointment({ shop }) {
                     <label className="block mb-2 text-sm font-medium text-gray-700">
                       Select Services
                     </label>
-                    <fieldset className="space-y-2">
+                    <fieldset className="space-y-2 h-48 overflow-y-auto p-2 border rounded">
                       {service.map((services) => (
                         <label
                           key={services.ServiceId}
@@ -259,6 +263,7 @@ export default function BookingAppointment({ shop }) {
                       ))}
                     </fieldset>
                   </div>
+
                   <div className="flex-1">
                     <label className="block mb-2 text-sm font-medium text-gray-700">
                       Select Employee

@@ -1,21 +1,23 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthenticationContext } from "../context/authentication";
 
 export default function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token); 
-  }, []);
+  const { isValid, setIsValid } = useContext(AuthenticationContext);
+  console.log("isvalid", isValid);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    setIsAuthenticated(false);
+    setIsValid(false);
+  };
+
+  const islogIn = () => {
+    let token = localStorage.getItem("token");
+    console.log("testing ==>", token);
+    return !!token;
   };
 
   const Menu = [
@@ -50,7 +52,7 @@ export default function Header() {
           ))}
         </ul>
       </div>
-      {isAuthenticated ? (
+      {islogIn() ? (
         <Button
           onClick={handleLogout}
           className="hover:scale-105 transition-all ease-in-out"
