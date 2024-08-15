@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Link from "next/link";
-import jwtDecode from "jwt-decode";
 
 const schema = z.object({
   Email: z.string().email("Invalid email format").nonempty("Email is required"),

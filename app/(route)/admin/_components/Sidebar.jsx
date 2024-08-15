@@ -50,6 +50,12 @@ export default function Sidebar() {
               <p className="text-lg">Add New Employee</p>
             </Link>
           </li>
+          <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
+            <FiPlusCircle className="mr-3 text-xl" />
+            <Link href="/admin/add-inventory">
+              <p className="text-lg">Add New Inventory</p>
+            </Link>
+          </li>
         </ul>
       </nav>
     </div>

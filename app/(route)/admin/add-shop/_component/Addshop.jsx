@@ -47,7 +47,7 @@ export default function AddShop() {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      ServicesId: [], 
+      ServicesId: [],
     },
   });
 
@@ -231,31 +231,32 @@ export default function AddShop() {
           </div>
 
           <div>
-  <label className="block text-lg font-medium text-gray-700">
-    Services
-  </label>
-  <div className="mt-1 max-h-48 overflow-y-auto flex flex-col space-y-2">
-    {services.map((service) => (
-      <div key={service?.ServiceId} className="flex items-center">
-        <input
-          type="checkbox"
-          id={`service-${service?.ServiceId}`}
-          value={service?.ServiceId}
-          checked={getValues("ServicesId")?.includes(service?.ServiceId)}
-          onChange={handleServiceChange}
-          className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-        />
-        <label
-          htmlFor={`service-${service?.ServiceId}`}
-          className="ml-3 block text-lg font-medium text-gray-700"
-        >
-          {service.ServiceName}
-        </label>
-      </div>
-    ))}
-  </div>
-</div>
-    
+            <label className="block text-lg font-medium text-gray-700">
+              Services
+            </label>
+            <div className="mt-1 max-h-48 overflow-y-auto flex flex-col space-y-2">
+              {services.map((service) => (
+                <div key={service?.ServiceId} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`service-${service?.ServiceId}`}
+                    value={service?.ServiceId}
+                    checked={getValues("ServicesId")?.includes(
+                      service?.ServiceId
+                    )}
+                    onChange={handleServiceChange}
+                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                  />
+                  <label
+                    htmlFor={`service-${service?.ServiceId}`}
+                    className="ml-3 block text-lg font-medium text-gray-700"
+                  >
+                    {service.ServiceName}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="flex items-center justify-end mt-8">
             <button

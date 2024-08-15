@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { fetchService } from "@/app/service/Service";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   Dialog,
   DialogClose,
@@ -22,6 +23,8 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEmployees } from "@/app/service/employee";
 
+const stripePromise = loadStripe('sk_test_51PnDpkAZuR0axWHNPIactCBf2naBPaAmZ63pYSrfsizEYzeVpkBhyq7Ov6hF8KYsFNp1VupaPJyBWbAx3Oo3r4QV00iui3ZfUv');
+
 export default function BookingAppointment({ shop }) {
   const [date, setDate] = useState(new Date());
   const [timeslot, setTimeslot] = useState([]);
@@ -31,8 +34,7 @@ export default function BookingAppointment({ shop }) {
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
-    useState(false);
+  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -41,7 +43,8 @@ export default function BookingAppointment({ shop }) {
       try {
         const response = await fetchService();
         setService(response);
-        setEmployee(resp);
+        const empResponse = await fetchEmployees();
+        setEmployee(empResponse);
       } catch (error) {
         console.error("Error fetching data", error);
       }
@@ -51,62 +54,73 @@ export default function BookingAppointment({ shop }) {
 
   useEffect(() => {
     getTime();
-    adjustInitialDate();
-  }, []);
+  }, [date]);
 
   const getTime = () => {
     const timelist = [];
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    const selectedDate = new Date(date);
+    const selectedDateHours = selectedDate.getHours();
+    const selectedDateMinutes = selectedDate.getMinutes();
 
-    for (let i = 10; i <= 18; i++) {
+    const formatTime = (hour, minute) => {
+      const period = hour < 12 ? "AM" : "PM";
+      const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
+      return `${formattedHour}:${minute < 10 ? '0' : ''}${minute} ${period}`;
+    };
+
+    const isTimeInPast = (hour, minute) => {
+      if (selectedDate.toDateString() === now.toDateString()) {
+        if (hour < currentHours || (hour === currentHours && minute <= currentMinutes)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    for (let i = 10; i <= 22; i++) {
       if (i === 12) {
-        timelist.push({ time: "12:00 PM" });
-        timelist.push({ time: "12:30 PM" });
+        timelist.push({ time: formatTime(12, 0), isPast: isTimeInPast(12, 0) });
+        timelist.push({ time: formatTime(12, 30), isPast: isTimeInPast(12, 30) });
       } else if (i < 12) {
-        timelist.push({ time: i + ":00 AM" });
-        timelist.push({ time: i + ":30 AM" });
+        timelist.push({ time: formatTime(i, 0), isPast: isTimeInPast(i, 0) });
+        timelist.push({ time: formatTime(i, 30), isPast: isTimeInPast(i, 30) });
       } else {
-        let hour = i - 12;
-        timelist.push({ time: hour + ":00 PM" });
-        timelist.push({ time: hour + ":30 PM" });
+        const hour = i - 12;
+        timelist.push({ time: formatTime(i, 0), isPast: isTimeInPast(i, 0) });
+        timelist.push({ time: formatTime(i, 30), isPast: isTimeInPast(i, 30) });
       }
     }
 
     setTimeslot(timelist);
   };
 
-  const adjustInitialDate = () => {
-    const currentDate = new Date();
-    const currentTime = currentDate.getHours() * 60 + currentDate.getMinutes();
-    const openingTime = 10 * 60; // 10:00 AM in minutes
-    const closingTime = 18 * 60 + 30; // 6:30 PM in minutes
-
-    if (currentTime > closingTime) {
-      const nextDay = new Date();
-      nextDay.setDate(currentDate.getDate() + 1);
-      setDate(nextDay);
-    } else if (currentTime < openingTime) {
-      setDate(currentDate);
-    } else {
-      setDate(currentDate);
+  useEffect(() => {
+    // When the dialog is opened, set the date to the current date
+    if (isDialogOpen) {
+      setDate(new Date());
     }
-  };
+  }, [isDialogOpen]);
 
   const isPastDay = (day) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const currentTime = new Date();
-    const currentMinutes =
-      currentTime.getHours() * 60 + currentTime.getMinutes();
-    const openingMinutes = 10 * 60;
+    const currentTime = today.getTime();
+    const selectedTime = day.getTime();
+    const openingMinutes = 10 * 60; // 10:00 AM in minutes
 
-    if (
-      today.toDateString() === day.toDateString() &&
-      currentMinutes >= openingMinutes
-    ) {
+    if (selectedTime < currentTime) {
       return true;
     }
 
-    return day < today;
+    if (selectedTime === currentTime && (today.getHours() * 60 + today.getMinutes()) >= openingMinutes) {
+      return true;
+    }
+
+    return false;
   };
 
   const handleServiceChange = (serviceId) => {
@@ -119,12 +133,8 @@ export default function BookingAppointment({ shop }) {
 
   const calculateTotalPrice = () => {
     return selectedServices.reduce((total, serviceId) => {
-      const selectedServiceData = service.find(
-        (s) => s.ServiceId === serviceId
-      );
-      return (
-        total + (selectedServiceData ? selectedServiceData.ServicePrice : 0)
-      );
+      const selectedServiceData = service.find((s) => s.ServiceId === serviceId);
+      return total + (selectedServiceData ? selectedServiceData.ServicePrice : 0);
     }, 0);
   };
 
@@ -220,10 +230,13 @@ export default function BookingAppointment({ shop }) {
                       {timeslot?.map((item, index) => (
                         <h2
                           key={index}
-                          onClick={() => setSelectedTimeSlot(item.time)}
-                          className={`p-2 border cursor-pointer text-center hover:bg-primary hover:text-white rounded-full ${
-                            item.time === selectedTimeSlot &&
-                            "bg-primary text-white"
+                          onClick={() => !item.isPast && setSelectedTimeSlot(item.time)}
+                          className={`p-2 border cursor-pointer text-center rounded-full ${
+                            item.isPast
+                              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                              : item.time === selectedTimeSlot
+                              ? "bg-primary text-white"
+                              : "hover:bg-primary hover:text-white"
                           }`}
                         >
                           {item.time}
@@ -358,7 +371,7 @@ export default function BookingAppointment({ shop }) {
             <DialogDescription>
               <div className="flex flex-col items-center gap-4">
                 <AlertCircle className="text-red-500 h-12 w-12" />
-                <p>appointement is already booked for given time</p>
+                <p>Appointment is already booked for the given time</p>
               </div>
             </DialogDescription>
           </DialogHeader>
