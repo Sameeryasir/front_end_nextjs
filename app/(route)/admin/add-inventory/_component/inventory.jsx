@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateInventories } from "@/app/service/createinventory";
+
 const schema = z.object({
   ProductName: z.string().min(1, "Product Name is required"),
   ProductPrice: z.number().positive("Product Price must be a positive number"),
@@ -19,6 +20,7 @@ export default function InventoryForm() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
+    mode: "onChange", // Validate as user types
   });
 
   const onSubmit = async (data) => {
@@ -32,33 +34,53 @@ export default function InventoryForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label>Product Name</label>
-        <input {...register("ProductName")} />
-        {errors.ProductName && <p>{errors.ProductName.message}</p>}
+    <form onSubmit={handleSubmit(onSubmit)} className="max-w-md mx-auto p-4 space-y-4 bg-white shadow-md rounded-md">
+      <div className="flex flex-col">
+        <label className="mb-2 text-gray-700">Product Name</label>
+        <input
+          className={`p-2 border ${errors.ProductName ? 'border-red-500' : 'border-gray-300'} rounded`}
+          {...register("ProductName")}
+          placeholder="Enter Product Name"
+        />
+        {errors.ProductName && (
+          <p className="text-red-500 text-sm mt-1">{errors.ProductName.message}</p>
+        )}
       </div>
 
-      <div>
-        <label>Product Price</label>
+      <div className="flex flex-col">
+        <label className="mb-2 text-gray-700">Product Price</label>
         <input
           type="number"
           step="0.01"
+          className={`p-2 border ${errors.ProductPrice ? 'border-red-500' : 'border-gray-300'} rounded`}
           {...register("ProductPrice", { valueAsNumber: true })}
+          placeholder="Enter Product Price"
         />
-        {errors.ProductPrice && <p>{errors.ProductPrice.message}</p>}
+        {errors.ProductPrice && (
+          <p className="text-red-500 text-sm mt-1">{errors.ProductPrice.message}</p>
+        )}
       </div>
 
-      <div>
-        <label>Product Quantity</label>
+      <div className="flex flex-col">
+        <label className="mb-2 text-gray-700">Product Quantity</label>
         <input
           type="number"
+          className={`p-2 border ${errors.ProductQuantity ? 'border-red-500' : 'border-gray-300'} rounded`}
           {...register("ProductQuantity", { valueAsNumber: true })}
+          placeholder="Enter Product Quantity"
         />
-        {errors.ProductQuantity && <p>{errors.ProductQuantity.message}</p>}
+        {errors.ProductQuantity && (
+          <p className="text-red-500 text-sm mt-1">{errors.ProductQuantity.message}</p>
+        )}
       </div>
 
-      <button type="submit">Create Inventory</button>
+      <button
+        type="submit"
+        className="w-full p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+        disabled={Object.keys(errors).length > 0} // Disable button if there are errors
+      >
+        Create Inventory
+      </button>
     </form>
   );
 }

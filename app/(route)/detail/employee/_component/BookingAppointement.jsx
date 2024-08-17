@@ -23,7 +23,9 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { fetchEmployees } from "@/app/service/employee";
 
-const stripePromise = loadStripe('sk_test_51PnDpkAZuR0axWHNPIactCBf2naBPaAmZ63pYSrfsizEYzeVpkBhyq7Ov6hF8KYsFNp1VupaPJyBWbAx3Oo3r4QV00iui3ZfUv');
+const stripePromise = loadStripe(
+  "sk_test_51PnDpkAZuR0axWHNPIactCBf2naBPaAmZ63pYSrfsizEYzeVpkBhyq7Ov6hF8KYsFNp1VupaPJyBWbAx3Oo3r4QV00iui3ZfUv"
+);
 
 export default function BookingAppointment({ shop }) {
   const [date, setDate] = useState(new Date());
@@ -34,7 +36,8 @@ export default function BookingAppointment({ shop }) {
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
+  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
+    useState(false);
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -61,7 +64,7 @@ export default function BookingAppointment({ shop }) {
     const now = new Date();
     const currentHours = now.getHours();
     const currentMinutes = now.getMinutes();
-    
+
     const selectedDate = new Date(date);
     const selectedDateHours = selectedDate.getHours();
     const selectedDateMinutes = selectedDate.getMinutes();
@@ -69,12 +72,15 @@ export default function BookingAppointment({ shop }) {
     const formatTime = (hour, minute) => {
       const period = hour < 12 ? "AM" : "PM";
       const formattedHour = hour % 12 === 0 ? 12 : hour % 12;
-      return `${formattedHour}:${minute < 10 ? '0' : ''}${minute} ${period}`;
+      return `${formattedHour}:${minute < 10 ? "0" : ""}${minute} ${period}`;
     };
 
     const isTimeInPast = (hour, minute) => {
       if (selectedDate.toDateString() === now.toDateString()) {
-        if (hour < currentHours || (hour === currentHours && minute <= currentMinutes)) {
+        if (
+          hour < currentHours ||
+          (hour === currentHours && minute <= currentMinutes)
+        ) {
           return true;
         }
       }
@@ -84,7 +90,10 @@ export default function BookingAppointment({ shop }) {
     for (let i = 10; i <= 22; i++) {
       if (i === 12) {
         timelist.push({ time: formatTime(12, 0), isPast: isTimeInPast(12, 0) });
-        timelist.push({ time: formatTime(12, 30), isPast: isTimeInPast(12, 30) });
+        timelist.push({
+          time: formatTime(12, 30),
+          isPast: isTimeInPast(12, 30),
+        });
       } else if (i < 12) {
         timelist.push({ time: formatTime(i, 0), isPast: isTimeInPast(i, 0) });
         timelist.push({ time: formatTime(i, 30), isPast: isTimeInPast(i, 30) });
@@ -116,7 +125,10 @@ export default function BookingAppointment({ shop }) {
       return true;
     }
 
-    if (selectedTime === currentTime && (today.getHours() * 60 + today.getMinutes()) >= openingMinutes) {
+    if (
+      selectedTime === currentTime &&
+      today.getHours() * 60 + today.getMinutes() >= openingMinutes
+    ) {
       return true;
     }
 
@@ -133,8 +145,12 @@ export default function BookingAppointment({ shop }) {
 
   const calculateTotalPrice = () => {
     return selectedServices.reduce((total, serviceId) => {
-      const selectedServiceData = service.find((s) => s.ServiceId === serviceId);
-      return total + (selectedServiceData ? selectedServiceData.ServicePrice : 0);
+      const selectedServiceData = service.find(
+        (s) => s.ServiceId === serviceId
+      );
+      return (
+        total + (selectedServiceData ? selectedServiceData.ServicePrice : 0)
+      );
     }, 0);
   };
 
@@ -230,7 +246,9 @@ export default function BookingAppointment({ shop }) {
                       {timeslot?.map((item, index) => (
                         <h2
                           key={index}
-                          onClick={() => !item.isPast && setSelectedTimeSlot(item.time)}
+                          onClick={() =>
+                            !item.isPast && setSelectedTimeSlot(item.time)
+                          }
                           className={`p-2 border cursor-pointer text-center rounded-full ${
                             item.isPast
                               ? "bg-gray-200 text-gray-500 cursor-not-allowed"
@@ -250,8 +268,8 @@ export default function BookingAppointment({ shop }) {
                     <label className="block mb-2 text-sm font-medium text-gray-700">
                       Select Services
                     </label>
-                    <fieldset className="space-y-2 h-48 overflow-y-auto p-2 border rounded">
-                      {service.map((services) => (
+                    <fieldset className="space-y-2 h-30 overflow-y-auto p-2 border rounded " >
+                      {shop?.services?.map((services) => (
                         <label
                           key={services.ServiceId}
                           className="flex items-start gap-4 cursor-pointer"

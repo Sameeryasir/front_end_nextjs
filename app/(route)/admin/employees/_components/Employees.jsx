@@ -4,12 +4,27 @@ import { deleteEmployeesById } from "@/app/service/deleteEmployeeById";
 import { UpdateByIdemployee } from '@/app/service/updateShopbyid';
 import Image from "next/image";
 
+// Schema validation for the form
 const employeeSchema = z.object({
   Name: z.string().min(1, "Name is required"),
   Email: z.string().email("Invalid email address"),
   PhoneNo: z.string().regex(/^\d+$/, "Phone number must be numeric"),
-  Status: z.boolean() // Status is a boolean (true for Present, false for Absent)
+  Status: z.boolean(),
+  HiredDate: z.string().nonempty("Hired Date is required")
 });
+
+// Function to format the date as MM/DD/YYYY
+const formatDate = (date) => {
+  const d = new Date(date);
+  let month = '' + (d.getMonth() + 1);
+  let day = '' + d.getDate();
+  const year = d.getFullYear();
+
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+
+  return [month, day, year].join('/');
+};
 
 export default function Employees({ employees }) {
   const [employeeList, setEmployeeList] = useState([]);
@@ -21,7 +36,8 @@ export default function Employees({ employees }) {
     // Initialize employee list with default statuses
     const initializedEmployees = employees.map(employee => ({
       ...employee,
-      Status: typeof employee.Status === 'undefined' ? true : employee.Status
+      Status: typeof employee.Status === 'undefined' ? true : employee.Status,
+      HiredDate: formatDate(employee.HiredDate) // Format HiredDate on initialization
     }));
     setEmployeeList(initializedEmployees);
   }, [employees]);
@@ -54,13 +70,13 @@ export default function Employees({ employees }) {
     try {
       employeeSchema.parse(updatedEmployee);
 
-      const response = await UpdateByIdemployee(id, updatedEmployee.Status);
+      const response = await UpdateByIdemployee(id, updatedEmployee);
       console.log('Update response:', response);
 
-      // Update the employee's status in the local state
+      // Update the employee's details in the local state
       setEmployeeList(prev =>
         prev.map(emp =>
-          emp.EmployeeId === id ? { ...emp, Status: updatedEmployee.Status } : emp
+          emp.EmployeeId === id ? { ...emp, ...updatedEmployee } : emp
         )
       );
 
@@ -98,6 +114,7 @@ export default function Employees({ employees }) {
             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">Email</th>
             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">Phone</th>
             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">Status</th>
+            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r border-gray-200">Hired Date</th>
             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
@@ -196,6 +213,23 @@ export default function Employees({ employees }) {
                   employee?.Status ? "Present" : "Absent"
                 )}
               </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
+                {editingId === employee.EmployeeId ? (
+                  <>
+                    <input
+                      type="text"
+                      name="HiredDate"
+                      value={updatedEmployee.HiredDate}
+                      onChange={handleChange}
+                      placeholder="MM/DD/YYYY"
+                      className="border border-gray-300 p-2 rounded"
+                    />
+                    {errors.HiredDate && <p className="text-red-500 text-xs">{errors.HiredDate}</p>}
+                  </>
+                ) : (
+                  employee?.HiredDate
+                )}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 {editingId === employee.EmployeeId ? (
                   <div className="flex space-x-3">
@@ -226,7 +260,7 @@ export default function Employees({ employees }) {
                     >
                       Delete
                     </button>
-                  </div >
+                  </div>
                 )}
               </td>
             </tr>
@@ -236,3 +270,4 @@ export default function Employees({ employees }) {
     </div>
   );
 }
+  

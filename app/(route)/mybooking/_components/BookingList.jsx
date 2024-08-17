@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,6 @@ import {
   Clock,
   DollarSignIcon,
   MapPin,
-  Server,
   User,
   X,
 } from "lucide-react";
@@ -16,15 +14,31 @@ import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
 import withAuth from "@/app/withAuth";
 
+// Helper function to format time to AM/PM
+const formatTimeTo12Hour = (time) => {
+  if (!time) return "";
+  
+  const [hours, minutes] = time.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(minutes);
+
+  return new Intl.DateTimeFormat('en-US', { 
+    hour: 'numeric', 
+    minute: 'numeric', 
+    hour12: true 
+  }).format(date);
+};
+
 const BookingList = ({ app }) => {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-  const [apps, SetApps] = useState();
+  const [apps, setApps] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState("");
 
-  const handleAppointmentClick = (AppointmentId) => {
-    setSelectedAppointmentId(AppointmentId);
-    console.log(`Appointment ID: ${AppointmentId}`);
+  const handleAppointmentClick = (appointmentId) => {
+    setSelectedAppointmentId(appointmentId);
+    console.log(`Appointment ID: ${appointmentId}`);
   };
 
   const handleImageClick = (url) => {
@@ -38,22 +52,24 @@ const BookingList = ({ app }) => {
   };
 
   useEffect(() => {
-    const fetchdata = async () => {
+    const fetchData = async () => {
+      if (!selectedAppointmentId) return;
+      console.log('Fetching data for ID:', selectedAppointmentId);
       try {
         const response = await updatebyId(selectedAppointmentId);
-        SetApps(response);
+        console.log('Data fetched:', response);
+        setApps(response);
       } catch (error) {
-        console.error("error fetching data", error);
+        console.error("Error fetching data:", error);
       }
     };
-    if (selectedAppointmentId) {
-      fetchdata();
-    }
+
+    fetchData();
   }, [selectedAppointmentId]);
 
   if (!app) {
-    console.error("Appointment is not available");
-    return null;
+    console.error("No appointments available");
+    return <p className="text-red-500 text-center">No appointments available.</p>;
   }
 
   return (
@@ -104,7 +120,7 @@ const BookingList = ({ app }) => {
                         alt="Shop's profile picture"
                         width={80}
                         height={40}
-                        onClick={() => handleImageClick(booking.shop.publicURL)}
+                        onClick={() => handleImageClick(booking?.shop?.publicURL)}
                       />
                     )}
                     <div className="ml-4">
@@ -129,7 +145,7 @@ const BookingList = ({ app }) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <Clock className="text-primary" />
-                    {booking?.Time}
+                    {formatTimeTo12Hour(booking?.Time)}
                   </p>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -140,7 +156,6 @@ const BookingList = ({ app }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <p className="text-sm text-gray-500 flex items-center gap-2">
-                    <Server className="text-primary" />
                     {booking?.services?.ServiceName}
                   </p>
                 </td>
@@ -170,7 +185,7 @@ const BookingList = ({ app }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
           <div className="relative bg-white p-4 rounded-lg">
             <button
-              className="right-2 text-gray-500 hover:text-primary"
+              className="absolute top-2 right-2 text-gray-500 hover:text-primary"
               onClick={closeModal}
             >
               <X className="w-6 h-6" />

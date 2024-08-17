@@ -8,7 +8,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-const ShopDetail = ({ shop, isValid }) => {
+const ShopDetail = ({ shop}) => {
   const settings = {
     dots: true,
     infinite: true,

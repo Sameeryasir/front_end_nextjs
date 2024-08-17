@@ -9,9 +9,12 @@ import {
   MenuItem,
 } from "@material-tailwind/react";
 import { updatebyStatus } from "@/app/service/updateshopstatus";
-
+import { UpdateShop } from "@/app/service/updateshop";
 export default function Shops({ shops }) {
   const [shopStatuses, setShopStatuses] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [updatedShop, setUpdatedShop] = useState({});
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (shops) {
@@ -22,8 +25,6 @@ export default function Shops({ shops }) {
       setShopStatuses(initialStatuses);
     }
   }, [shops]);
-
-  console.log(shops);
 
   const handleViewInventory = (ShopId) => {
     console.log(`Viewing inventory for Shop ID: ${ShopId}`);
@@ -37,8 +38,47 @@ export default function Shops({ shops }) {
     console.log(`Deleting shop ID: ${ShopId}`);
   };
 
-  const handleUpdate = (ShopId) => {
-    console.log(`Updating shop ID: ${ShopId}`);
+  const handleEdit = (shop) => {
+    setEditingId(shop.ShopId);
+    setUpdatedShop({ ...shop });
+    setErrors({});
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setUpdatedShop({});
+    setErrors({});
+  };
+
+  const handleSave = async (id) => {
+    console.log(`Saving updates for shop with id ${id}`, updatedShop);
+
+    try {
+      // Assuming the schema for updating a shop is similar to the one for employees
+      // Update this part to match the exact schema you need
+      const response = await UpdateShop(id, updatedShop);
+      console.log('Update response:', response);
+
+      // Update the shop's status in the local state
+      setShopStatuses(prevStatuses => ({
+        ...prevStatuses,
+        [id]: updatedShop.isOpen,
+      }));
+
+      setEditingId(null);
+      setUpdatedShop({});
+    } catch (error) {
+      console.error(`Failed to update shop with id ${id}:`, error);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    setUpdatedShop((prev) => ({
+      ...prev,
+      [name]: type === "radio" ? (value === "true") : value,
+    }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleStatusChange = async (ShopId, status) => {
@@ -50,7 +90,7 @@ export default function Shops({ shops }) {
     try {
       const response = await updatebyStatus(ShopId, status);
       console.log(
-        `Shop ID: ${ShopId} is now ${status ? "Active" : "Inactive"}`
+        `Shop ID: ${ShopId} is now ${status ? "Open" : "Closed"}`
       );
     } catch (error) {
       console.error(`Failed to update status for Shop ID: ${ShopId}`, error);
@@ -79,9 +119,22 @@ export default function Shops({ shops }) {
                   )}
                 </div>
                 <div>
-                  <div className="uppercase tracking-wide text-sm text-primary font-semibold">
-                    {item?.Name}
-                  </div>
+                  {editingId === item.ShopId ? (
+                    <>
+                      <input
+                        type="text"
+                        name="Name"
+                        value={updatedShop.Name}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded"
+                      />
+                      {/* Add other fields as needed for editing */}
+                    </>
+                  ) : (
+                    <div className="uppercase tracking-wide text-sm text-primary font-semibold">
+                      {item?.Name}
+                    </div>
+                  )}
                   <p className="flex gap-2 mt-2 text-gray-500">
                     <User className="text-primary" />
                     {item?.Owner}
@@ -119,12 +172,25 @@ export default function Shops({ shops }) {
                   <MoreHorizontal className="cursor-pointer text-gray-500" />
                 </MenuHandler>
                 <MenuList>
-                  <MenuItem onClick={() => handleUpdate(item?.ShopId)}>
-                    Update
-                  </MenuItem>
-                  <MenuItem onClick={() => handleDelete(item?.ShopId)}>
-                    Delete
-                  </MenuItem>
+                  {editingId === item.ShopId ? (
+                    <>
+                      <MenuItem onClick={() => handleSave(item?.ShopId)}>
+                        Save
+                      </MenuItem>
+                      <MenuItem onClick={handleCancel}>
+                        Cancel
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem onClick={() => handleEdit(item)}>
+                        Update
+                      </MenuItem>
+                      <MenuItem onClick={() => handleDelete(item?.ShopId)}>
+                        Delete
+                      </MenuItem>
+                    </>
+                  )}
                 </MenuList>
               </Menu>
             </div>

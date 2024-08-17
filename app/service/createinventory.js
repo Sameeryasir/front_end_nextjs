@@ -17,7 +17,7 @@ export async function CreateInventories(inventorydata) {
   return data;
 }
 export async function UpdateInventories(id, UpdateInventories) {
-  const response = await fetch("http://localhost:3000/inventory/shop/" + id, {
+  const response = await fetch("http://localhost:3000/inventory/" + id, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -27,4 +27,4 @@ export async function UpdateInventories(id, UpdateInventories) {
 const data = await response.json();
 return data;
 
-}
+} 
