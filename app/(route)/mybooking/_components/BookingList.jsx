@@ -14,7 +14,6 @@ import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
 import withAuth from "@/app/withAuth";
 
-// Helper function to format time to AM/PM
 const formatTimeTo12Hour = (time) => {
   if (!time) return "";
   
@@ -30,7 +29,7 @@ const formatTimeTo12Hour = (time) => {
   }).format(date);
 };
 
-const BookingList = ({ app }) => {
+export default function BookingList({ app ,isValid}){
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [apps, setApps] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -193,8 +192,8 @@ const BookingList = ({ app }) => {
             <Image
               src={modalImageUrl}
               alt="Larger view"
-              width={700} // Adjust as needed
-              height={700} // Adjust as needed
+              width={700} 
+              height={700} 
               className="object-contain"
             />
           </div>
@@ -204,4 +203,4 @@ const BookingList = ({ app }) => {
   );
 };
 
-export default withAuth(BookingList); // Wrap the component with withAuth HOC
+

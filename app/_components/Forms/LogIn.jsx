@@ -5,8 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Link from "next/link";
+import { AuthenticationContext } from "@/app/context/authentication";
 
 const schema = z.object({
   Email: z.string().email("Invalid email format").nonempty("Email is required"),
@@ -27,6 +28,7 @@ const LoginForm = () => {
 
   const router = useRouter();
   const [loginError, setLoginError] = useState(null);
+  const { isValid, setIsValid } = useContext(AuthenticationContext);
 
   const onSubmit = async (data) => {
     try {
@@ -37,16 +39,20 @@ const LoginForm = () => {
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-
+  
       const responseData = await response.json();
-      console.log("Login successful:", responseData);
-
+      console.log("Response Data:", responseData); // Log response data
+  
       localStorage.setItem("token", responseData.token);
-
+      setIsValid(true);
+  
+      // Debug UserType
+      console.log("UserType:", responseData.UserType);
+  
       if (responseData.UserType === "Admin") {
         router.push("/admin");
       } else {
@@ -57,6 +63,7 @@ const LoginForm = () => {
       setLoginError("Invalid email or password.");
     }
   };
+  
 
   return (
     <section className="h-screen flex items-start justify-center bg-gray-100 pt-16">
@@ -77,7 +84,9 @@ const LoginForm = () => {
               className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.Email && (
-              <p className="text-red-500 text-sm mt-1">{errors.Email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.Email.message}
+              </p>
             )}
           </div>
 

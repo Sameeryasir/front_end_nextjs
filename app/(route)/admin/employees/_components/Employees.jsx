@@ -4,16 +4,26 @@ import { deleteEmployeesById } from "@/app/service/deleteEmployeeById";
 import { UpdateByIdemployee } from '@/app/service/updateShopbyid';
 import Image from "next/image";
 
-// Schema validation for the form
 const employeeSchema = z.object({
-  Name: z.string().min(1, "Name is required"),
-  Email: z.string().email("Invalid email address"),
-  PhoneNo: z.string().regex(/^\d+$/, "Phone number must be numeric"),
-  Status: z.boolean(),
-  HiredDate: z.string().nonempty("Hired Date is required")
+  Name: z.string()
+  .min(1, "Name is required")
+  .max(50, "Name cannot exceed 50 characters")
+  .regex(/^[a-zA-Z\s]+$/, "Name must contain only alphabetic characters and spaces"),
+
+Email: z.string()
+  .email("Invalid email address")
+  .max(100, "Email cannot exceed 100 characters"),
+
+  PhoneNo: z.string()
+    .length(11, "Phone number must be exactly 11 digits")
+    .regex(/^\d+$/, "Phone number must be numeric"),
+
+Status: z.boolean(),
+
+HiredDate: z.string()
+  .nonempty("Hired Date is required")
 });
 
-// Function to format the date as MM/DD/YYYY
 const formatDate = (date) => {
   const d = new Date(date);
   let month = '' + (d.getMonth() + 1);
@@ -26,6 +36,10 @@ const formatDate = (date) => {
   return [month, day, year].join('/');
 };
 
+const parseISODate = (dateString) => {
+  return new Date(dateString).toISOString().split('T')[0]; // Format date to YYYY-MM-DD
+};
+
 export default function Employees({ employees }) {
   const [employeeList, setEmployeeList] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -33,11 +47,10 @@ export default function Employees({ employees }) {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    // Initialize employee list with default statuses
     const initializedEmployees = employees.map(employee => ({
       ...employee,
-      Status: typeof employee.Status === 'undefined' ? true : employee.Status,
-      HiredDate: formatDate(employee.HiredDate) // Format HiredDate on initialization
+      Status: typeof employee.isPresent === 'undefined' ? true : employee.isPresent,
+      HiredDate: formatDate(employee.HiredDate)
     }));
     setEmployeeList(initializedEmployees);
   }, [employees]);
@@ -45,7 +58,6 @@ export default function Employees({ employees }) {
   const handleDelete = async (id) => {
     try {
       await deleteEmployeesById(id);
-      // Remove the deleted employee from the local state
       setEmployeeList(prev => prev.filter(emp => emp.EmployeeId !== id));
     } catch (error) {
       console.error(`Failed to delete employee with id ${id}:`, error);
@@ -54,7 +66,10 @@ export default function Employees({ employees }) {
 
   const handleEdit = (employee) => {
     setEditingId(employee.EmployeeId);
-    setUpdatedEmployee({ ...employee });
+    setUpdatedEmployee({
+      ...employee,
+      HiredDate: parseISODate(employee.HiredDate) // Ensure correct format for editing
+    });
     setErrors({});
   };
 
@@ -64,24 +79,10 @@ export default function Employees({ employees }) {
     setErrors({});
   };
 
-  const handleSave = async (id) => {
-    console.log(`Saving updates for employee with id ${id}`, updatedEmployee);
-
+  const validateEmployee = (employeeData) => {
     try {
-      employeeSchema.parse(updatedEmployee);
-
-      const response = await UpdateByIdemployee(id, updatedEmployee);
-      console.log('Update response:', response);
-
-      // Update the employee's details in the local state
-      setEmployeeList(prev =>
-        prev.map(emp =>
-          emp.EmployeeId === id ? { ...emp, ...updatedEmployee } : emp
-        )
-      );
-
-      setEditingId(null);
-      setUpdatedEmployee({});
+      employeeSchema.parse(employeeData);
+      setErrors({});
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.errors.reduce((acc, e) => {
@@ -89,19 +90,59 @@ export default function Employees({ employees }) {
           return acc;
         }, {});
         setErrors(fieldErrors);
-      } else {
-        console.error(`Failed to update employee with id ${id}:`, error);
       }
     }
   };
 
+  const handleSave = async (id) => {
+    console.log(`Saving updates for employee with id ${id}`, updatedEmployee);
+
+    try {
+      // Convert the HiredDate back to ISO format and rename Status to isPresent
+      const employeeData = {
+        ...updatedEmployee,
+        HiredDate: new Date(updatedEmployee.HiredDate).toISOString(),
+        isPresent: updatedEmployee.Status
+      };
+
+      // Validate the updated employee object
+      validateEmployee(employeeData);
+
+      if (Object.keys(errors).length === 0) {
+        // Call the update service with the full employee data
+        const response = await UpdateByIdemployee(id, employeeData);
+        console.log('Update response:', response);
+
+        // Update the local state with the updated data
+        setEmployeeList(prev =>
+          prev.map(emp =>
+            emp.EmployeeId === id ? { ...emp, ...response, isPresent: response.isPresent } : emp
+          )
+        );
+
+        // Reset the editing state
+        setEditingId(null);
+        setUpdatedEmployee({});
+      }
+    } catch (error) {
+      console.error(`Failed to update employee with id ${id}:`, error);
+    }
+  };
+
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setUpdatedEmployee((prev) => ({
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "radio" ? (value === "true") : (type === "checkbox" ? checked : value);
+
+    setUpdatedEmployee(prev => ({
       ...prev,
-      [name]: type === "radio" ? (value === "true") : value
+      [name]: newValue
     }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // Validate the updated value for the specific field
+    validateEmployee({
+      ...updatedEmployee,
+      [name]: newValue
+    });
   };
 
   return (
@@ -140,7 +181,7 @@ export default function Employees({ employees }) {
                       name="Name"
                       value={updatedEmployee.Name}
                       onChange={handleChange}
-                      className="border border-gray-300 p-2 rounded"
+                      className={`border p-2 rounded ${errors.Name ? 'border-red-500' : 'border-gray-300'}`}
                     />
                     {errors.Name && <p className="text-red-500 text-xs">{errors.Name}</p>}
                   </>
@@ -156,7 +197,7 @@ export default function Employees({ employees }) {
                       name="Email"
                       value={updatedEmployee.Email}
                       onChange={handleChange}
-                      className="border border-gray-300 p-2 rounded"
+                      className={`border p-2 rounded ${errors.Email ? 'border-red-500' : 'border-gray-300'}`}
                     />
                     {errors.Email && <p className="text-red-500 text-xs">{errors.Email}</p>}
                   </>
@@ -172,7 +213,7 @@ export default function Employees({ employees }) {
                       name="PhoneNo"
                       value={updatedEmployee.PhoneNo}
                       onChange={handleChange}
-                      className="border border-gray-300 p-2 rounded"
+                      className={`border p-2 rounded ${errors.PhoneNo ? 'border-red-500' : 'border-gray-300'}`}
                     />
                     {errors.PhoneNo && <p className="text-red-500 text-xs">{errors.PhoneNo}</p>}
                   </>
@@ -210,24 +251,24 @@ export default function Employees({ employees }) {
                     {errors.Status && <p className="text-red-500 text-xs">{errors.Status}</p>}
                   </>
                 ) : (
-                  employee?.Status ? "Present" : "Absent"
+                  employee?.isPresent ? "Present" : "Absent"
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
                 {editingId === employee.EmployeeId ? (
                   <>
                     <input
-                      type="text"
+                      type="date"
                       name="HiredDate"
                       value={updatedEmployee.HiredDate}
                       onChange={handleChange}
-                      placeholder="MM/DD/YYYY"
-                      className="border border-gray-300 p-2 rounded"
+                      placeholder="YYYY-MM-DD"
+                      className={`border p-2 rounded ${errors.HiredDate ? 'border-red-500' : 'border-gray-300'}`}
                     />
                     {errors.HiredDate && <p className="text-red-500 text-xs">{errors.HiredDate}</p>}
                   </>
                 ) : (
-                  employee?.HiredDate
+                  formatDate(employee?.HiredDate) // Display in MM/DD/YYYY
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -270,4 +311,3 @@ export default function Employees({ employees }) {
     </div>
   );
 }
-  

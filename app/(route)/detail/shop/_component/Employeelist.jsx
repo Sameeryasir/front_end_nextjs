@@ -16,7 +16,7 @@ export default function EmployeeList({ shop }) {
     return null;
   }
 
-  const employeesToShow = shop.employees.slice(currentIndex, currentIndex + 1);
+  const employeesToShow = shop?.employees?.slice(currentIndex, currentIndex + 1);
 
   const prevSlide = () => {
     setTimeout(() => {

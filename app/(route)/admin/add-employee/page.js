@@ -14,7 +14,7 @@ export default function page() {
   }
   return (
     <div>
-      <Addemployee />
+      <Addemployee  isValid={isValid}/>
     </div>
   );
 }
