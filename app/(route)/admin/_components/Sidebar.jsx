@@ -16,12 +16,7 @@ export default function Sidebar() {
       </div>
       <nav className="mt-5">
         <ul>
-          <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
-            <FiCalendar className="mr-3 text-xl" />
-            <Link href="/admin/mybookings">
-              <p className="text-lg">Appointments</p>
-            </Link>
-          </li>
+        
           <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
             <FiUsers className="mr-3 text-xl" />
             <Link href="/admin/customer">

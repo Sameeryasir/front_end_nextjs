@@ -2,34 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import {
-  Calendar,
-  Clock,
-  DollarSignIcon,
-  MapPin,
-  User,
-  X,
-} from "lucide-react";
+import { Calendar, Clock, DollarSignIcon, MapPin, User, X } from "lucide-react";
 import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
 import withAuth from "@/app/withAuth";
 
 const formatTimeTo12Hour = (time) => {
   if (!time) return "";
-  
+
   const [hours, minutes] = time.split(":").map(Number);
   const date = new Date();
   date.setHours(hours);
   date.setMinutes(minutes);
 
-  return new Intl.DateTimeFormat('en-US', { 
-    hour: 'numeric', 
-    minute: 'numeric', 
-    hour12: true 
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
   }).format(date);
 };
 
-export default function BookingList({ app ,isValid}){
+export default function BookingList({ app, isValid }) {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [apps, setApps] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,10 +46,10 @@ export default function BookingList({ app ,isValid}){
   useEffect(() => {
     const fetchData = async () => {
       if (!selectedAppointmentId) return;
-      console.log('Fetching data for ID:', selectedAppointmentId);
+      console.log("Fetching data for ID:", selectedAppointmentId);
       try {
         const response = await updatebyId(selectedAppointmentId);
-        console.log('Data fetched:', response);
+        console.log("Data fetched:", response);
         setApps(response);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -68,7 +61,9 @@ export default function BookingList({ app ,isValid}){
 
   if (!app) {
     console.error("No appointments available");
-    return <p className="text-red-500 text-center">No appointments available.</p>;
+    return (
+      <p className="text-red-500 text-center">No appointments available.</p>
+    );
   }
 
   return (
@@ -119,7 +114,9 @@ export default function BookingList({ app ,isValid}){
                         alt="Shop's profile picture"
                         width={80}
                         height={40}
-                        onClick={() => handleImageClick(booking?.shop?.publicURL)}
+                        onClick={() =>
+                          handleImageClick(booking?.shop?.publicURL)
+                        }
                       />
                     )}
                     <div className="ml-4">
@@ -192,8 +189,8 @@ export default function BookingList({ app ,isValid}){
             <Image
               src={modalImageUrl}
               alt="Larger view"
-              width={700} 
-              height={700} 
+              width={700}
+              height={700}
               className="object-contain"
             />
           </div>
@@ -201,6 +198,4 @@ export default function BookingList({ app ,isValid}){
       )}
     </>
   );
-};
-
-
+}

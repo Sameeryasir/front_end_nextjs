@@ -10,11 +10,13 @@ import {
 } from "@material-tailwind/react";
 import { updatebyStatus } from "@/app/service/updateshopstatus";
 import { UpdateShop } from "@/app/service/updateshop";
+
 export default function Shops({ shops }) {
   const [shopStatuses, setShopStatuses] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [updatedShop, setUpdatedShop] = useState({});
   const [errors, setErrors] = useState({});
+  const [localShops, setLocalShops] = useState(shops);
 
   useEffect(() => {
     if (shops) {
@@ -23,6 +25,7 @@ export default function Shops({ shops }) {
         return acc;
       }, {});
       setShopStatuses(initialStatuses);
+      setLocalShops(shops); // Initialize local shops
     }
   }, [shops]);
 
@@ -34,8 +37,17 @@ export default function Shops({ shops }) {
     console.log(`Viewing employees for Shop ID: ${ShopId}`);
   };
 
-  const handleDelete = (ShopId) => {
+  const handleViewAppointments = (ShopId) => {
+    console.log(`Viewing appointments for Shop ID: ${ShopId}`);
+    // Add logic to navigate to the appointments page or show appointments
+  };
+
+  const handleDelete = async (ShopId) => {
     console.log(`Deleting shop ID: ${ShopId}`);
+    // Remove shop from the local state
+    setLocalShops((prevShops) =>
+      prevShops.filter((shop) => shop.ShopId !== ShopId)
+    );
   };
 
   const handleEdit = (shop) => {
@@ -54,16 +66,16 @@ export default function Shops({ shops }) {
     console.log(`Saving updates for shop with id ${id}`, updatedShop);
 
     try {
-      // Assuming the schema for updating a shop is similar to the one for employees
-      // Update this part to match the exact schema you need
+      // Update the shop details
       const response = await UpdateShop(id, updatedShop);
-      console.log('Update response:', response);
+      console.log("Update response:", response);
 
-      // Update the shop's status in the local state
-      setShopStatuses(prevStatuses => ({
-        ...prevStatuses,
-        [id]: updatedShop.isOpen,
-      }));
+      // Update the shop's details in the local state without changing the status
+      setLocalShops((prevShops) =>
+        prevShops.map((shop) =>
+          shop.ShopId === id ? { ...shop, ...updatedShop } : shop
+        )
+      );
 
       setEditingId(null);
       setUpdatedShop({});
@@ -76,7 +88,7 @@ export default function Shops({ shops }) {
     const { name, value, type } = e.target;
     setUpdatedShop((prev) => ({
       ...prev,
-      [name]: type === "radio" ? (value === "true") : value,
+      [name]: type === "radio" ? value === "true" : value,
     }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
@@ -89,9 +101,7 @@ export default function Shops({ shops }) {
 
     try {
       const response = await updatebyStatus(ShopId, status);
-      console.log(
-        `Shop ID: ${ShopId} is now ${status ? "Open" : "Closed"}`
-      );
+      console.log(`Shop ID: ${ShopId} is now ${status ? "Open" : "Closed"}`);
     } catch (error) {
       console.error(`Failed to update status for Shop ID: ${ShopId}`, error);
     }
@@ -100,7 +110,7 @@ export default function Shops({ shops }) {
   return (
     <div className="max-w-full mx-auto overflow-hidden">
       <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
-        {shops?.map((item) => (
+        {localShops?.map((item) => (
           <div
             key={item?.ShopId}
             className="m-4 bg-white rounded-xl shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg"
@@ -126,23 +136,48 @@ export default function Shops({ shops }) {
                         name="Name"
                         value={updatedShop.Name}
                         onChange={handleChange}
-                        className="border border-gray-300 p-2 rounded"
+                        className="border border-gray-300 p-2 rounded mb-2 w-full"
+                        placeholder="Shop Name"
                       />
-                      {/* Add other fields as needed for editing */}
+                      <input
+                        type="text"
+                        name="Address"
+                        value={updatedShop.Address}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded mb-2 w-full"
+                        placeholder="Address"
+                      />
+                      <input
+                        type="text"
+                        name="Owner"
+                        value={updatedShop.Owner}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded mb-2 w-full"
+                        placeholder="Owner Name"
+                      />
+                      <textarea
+                        name="Description"
+                        value={updatedShop.Description}
+                        onChange={handleChange}
+                        className="border border-gray-300 p-2 rounded mb-2 w-full"
+                        placeholder="Description"
+                      />
                     </>
                   ) : (
-                    <div className="uppercase tracking-wide text-sm text-primary font-semibold">
-                      {item?.Name}
+                    <div>
+                      <div className="uppercase tracking-wide text-sm text-primary font-semibold">
+                        {item?.Name}
+                      </div>
+                      <p className="flex gap-2 mt-2 text-gray-500">
+                        <User className="text-primary" />
+                        {item?.Owner}
+                      </p>
+                      <p className="flex gap-2 mt-2 text-gray-500">
+                        <MapPin className="text-primary" />
+                        {item?.Address}
+                      </p>
                     </div>
                   )}
-                  <p className="flex gap-2 mt-2 text-gray-500">
-                    <User className="text-primary" />
-                    {item?.Owner}
-                  </p>
-                  <p className="flex gap-2 mt-2 text-gray-500">
-                    <MapPin className="text-primary" />
-                    {item?.Address}
-                  </p>
                   <div className="mt-4 grid gap-4">
                     <Link
                       href={`/admin/employees/${item?.Name}-${item?.ShopId}`}
@@ -164,6 +199,16 @@ export default function Shops({ shops }) {
                         View Inventory
                       </button>
                     </Link>
+                    <Link
+                      href={`/admin/mybookings/${item?.Name}-${item?.ShopId}`}
+                    >
+                      <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        onClick={() => handleViewAppointments(item?.ShopId)}
+                      >
+                        View Appointments
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -177,9 +222,7 @@ export default function Shops({ shops }) {
                       <MenuItem onClick={() => handleSave(item?.ShopId)}>
                         Save
                       </MenuItem>
-                      <MenuItem onClick={handleCancel}>
-                        Cancel
-                      </MenuItem>
+                      <MenuItem onClick={handleCancel}>Cancel</MenuItem>
                     </>
                   ) : (
                     <>

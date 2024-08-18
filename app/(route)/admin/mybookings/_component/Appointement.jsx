@@ -15,7 +15,6 @@ import Accept from "../../_components/Accept";
 
 export default function Appointment({ app }) {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-  const [apps, SetApps] = useState();
 
   const handleAppointmentClick = (AppointmentId) => {
     setSelectedAppointmentId(AppointmentId);

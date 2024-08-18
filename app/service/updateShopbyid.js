@@ -10,7 +10,6 @@ export async function UpdateById(id, updatedEmployee) {
   return data;
 }
 export async function UpdateByIdemployee(id, employeeData) {
-  // Rename Status to isPresent in the data before sending it to the server
   const { Status, ...rest } = employeeData;
   const updatedEmployeeData = {
     ...rest,
