@@ -18,23 +18,23 @@ export default function Page() {
         const inventoryArray = shopname.split("-");
         const id = inventoryArray[inventoryArray.length - 1];
         console.log("Fetching inventory for ID:", id);
-        const response = await fetchInventoryByShopId(id,page,limit);
-        const fetchedInventory= response?.data || [];
+        const response = await fetchInventoryByShopId(id, page, limit);
+        const fetchedInventory = response?.data || [];
 
         setInventory(fetchedInventory);
-        setHasMoreData(fetchedInventory.length===limit);
+        setHasMoreData(fetchedInventory.length === limit);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
     };
 
     fetchData();
-  }, [params,page,limit]);
+  }, [params, page, limit]);
 
   const handlePageChange = (newPage) => {
-    if (newPage > page && !hasMoreData) {
-      return;
-    }
+    // if (newPage > page && !hasMoreData) {
+    //   return;
+    // }
     setPage(newPage);
   };
 

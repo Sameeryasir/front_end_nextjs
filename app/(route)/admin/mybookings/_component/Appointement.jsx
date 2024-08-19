@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import {
   Calendar,
@@ -14,7 +14,9 @@ import { updatebyId } from "@/app/service/Update";
 import Accept from "../../_components/Accept";
 
 export default function Appointment({ app }) {
+  const [appointments, setAppointments] = useState(app || []);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+  const prevAppointmentsRef = useRef(app || []);
 
   const handleAppointmentClick = (AppointmentId) => {
     setSelectedAppointmentId(AppointmentId);
@@ -25,18 +27,26 @@ export default function Appointment({ app }) {
     const fetchdata = async () => {
       try {
         const response = await updatebyId(selectedAppointmentId);
-        SetApps(response);
+        setAppointments(response);
+
+        // Play notification sound if new appointments are detected
+        if (JSON.stringify(response) !== JSON.stringify(prevAppointmentsRef.current)) {
+          const audio = new Audio("/sounds/answer-tone.wav");
+          audio.play();
+        }
+        prevAppointmentsRef.current = response; // Update previous appointments
       } catch (error) {
         console.error("error fetching data", error);
       }
     };
+    
     if (selectedAppointmentId) {
       fetchdata();
     }
   }, [selectedAppointmentId]);
 
-  if (!app) {
-    console.error("Appointment is not available");
+  if (!appointments) {
+    console.error("Appointments are not available");
     return null;
   }
 
@@ -86,7 +96,7 @@ export default function Appointment({ app }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {app?.map((booking) => (
+          {appointments?.map((booking) => (
             <tr key={booking?.AppointmentId} className="hover:bg-gray-50">
               <td className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap flex items-center border-r border-gray-200">
                 {booking?.shop?.publicURL && (

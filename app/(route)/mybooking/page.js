@@ -43,8 +43,8 @@ export default function MyBookings() {
       }
     };
 
-    fetchData(); // Call the fetchData function here with updated page value
-  }, [isValid, page, router, setIsValid, limit]); // Add `limit` as a dependency
+    fetchData(); 
+  }, [isValid, page, router, setIsValid, limit]); 
 
   useEffect(() => {
     const checkAuthStatus = () => {

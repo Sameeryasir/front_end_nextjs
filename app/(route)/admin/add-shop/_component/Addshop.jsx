@@ -8,31 +8,45 @@ import { fetchCategory } from "@/app/service/Category";
 import { fetchService } from "@/app/service/Service";
 import { useRouter } from "next/navigation";
 import { FiUser, FiMail, FiBriefcase, FiMapPin } from "react-icons/fi";
-
 const schema = z.object({
   Name: z
     .string()
     .min(3, { message: "Name must be at least 3 characters" })
     .max(50, { message: "Name cannot exceed 50 characters" })
+    .regex(/^[a-zA-Z\s]+$/, { message: "Name must contain only alphabetic characters and spaces" })
     .nonempty({ message: "Name is required" }),
+
   Address: z
     .string()
-    .max(50, { message: "Address cannot exceed 50 characters" })
+    .max(50, { message: "Address cannot exceed 50 characters" })    
+    .regex(/^[a-zA-Z\s]+$/, { message: "Address must contain only alphabetic characters and spaces" })
+
     .optional(),
+
   Owner: z
     .string()
     .min(3, { message: "Owner name must be at least 3 characters" })
     .max(50, { message: "Owner name cannot exceed 50 characters" })
+    .regex(/^[a-zA-Z\s]+$/, { message: "Owner name must contain only alphabetic characters and spaces" })
     .nonempty({ message: "Owner is required" }),
+
   Description: z
     .string()
     .min(50, { message: "Description must be at least 50 characters" })
     .max(150, { message: "Description cannot exceed 150 characters" })
+    .regex(/^[a-zA-Z\s]+$/, { message: "Description name must contain only alphabetic characters and spaces" })
     .nonempty({ message: "Description is required" }),
-  CategoryId: z.number().positive().int(),
-  ServicesId: z.array(z.number().positive().int()).optional(),
-});
 
+  CategoryId: z
+    .number()
+    .positive({ message: "CategoryId must be a positive number" })
+    .int({ message: "CategoryId must be an integer" }),
+
+  ServicesId: z
+    .array(z.number().positive().int())
+    .optional()
+    .refine((array) => array.length > 0, { message: "At least one service must be selected" }),
+});
 export default function AddShop() {
   const [category, setCategory] = useState([]);
   const [services, setServices] = useState([]);

@@ -10,8 +10,9 @@ import {
 } from "@material-tailwind/react";
 import { updatebyStatus } from "@/app/service/updateshopstatus";
 import { UpdateShop } from "@/app/service/updateshop";
+import { deleteShopById } from "@/app/service/Deleteshop";
 
-export default function Shops({ shops }) {
+export default function Shops({ shops ,isValid}) {
   const [shopStatuses, setShopStatuses] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [updatedShop, setUpdatedShop] = useState({});
@@ -39,16 +40,32 @@ export default function Shops({ shops }) {
 
   const handleViewAppointments = (ShopId) => {
     console.log(`Viewing appointments for Shop ID: ${ShopId}`);
-    // Add logic to navigate to the appointments page or show appointments
   };
 
   const handleDelete = async (ShopId) => {
-    console.log(`Deleting shop ID: ${ShopId}`);
-    // Remove shop from the local state
-    setLocalShops((prevShops) =>
-      prevShops.filter((shop) => shop.ShopId !== ShopId)
-    );
+    
+    const isConfirmed = window.confirm(`Are you sure you want to delete the shop with ID: ${ShopId}?`);
+  
+    // Proceed with deletion if user 
+    if (isConfirmed) {
+      console.log(`Deleting shop ID: ${ShopId}`);
+  
+      try {
+        await deleteShopById(ShopId);
+  
+        // Update the local state to remove the deleted shop
+        setLocalShops((prevShops) =>
+          prevShops.filter((shop) => shop.ShopId !== ShopId)
+        );
+      } catch (error) {
+        console.error(`Failed to delete shop ID: ${ShopId}`, error);
+      }
+    } else {
+      // Optionally handle the case where the user cancels the deletion
+      console.log(`Deletion of shop ID: ${ShopId} was cancelled.`);
+    }
   };
+  
 
   const handleEdit = (shop) => {
     setEditingId(shop.ShopId);

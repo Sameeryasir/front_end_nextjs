@@ -17,16 +17,7 @@ export default function Sidebar() {
       <nav className="mt-5">
         <ul>
         
-          <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
-            <FiUsers className="mr-3 text-xl" />
-            <Link href="/admin/customer">
-              <p className="text-lg">Customers</p>
-            </Link>
-          </li>
-          <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
-            <FiScissors className="mr-3 text-xl" />
-            <p className="text-lg">Services</p>
-          </li>
+          
           <li className="flex items-center p-4 hover:bg-gray-700 transition duration-200">
             <FiShoppingBag className="mr-3 text-xl" />
             <Link href="/admin/shop">

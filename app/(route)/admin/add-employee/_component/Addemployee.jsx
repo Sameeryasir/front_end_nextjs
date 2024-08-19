@@ -18,25 +18,32 @@ import Shopdialog from "../../add-shop/_component/shopdialog";
 const schema = z.object({
   Name: z
     .string()
-    .min(3, { message: "Name must be at least 3 characters" })
+    .min(1, { message: "Name is required" })
     .max(50, { message: "Name cannot exceed 50 characters" })
-    .nonempty({ message: "Name is required" }),
-  Email: z.string().email({ message: "Invalid email address" }).optional(),
+    .regex(/^[a-zA-Z\s]+$/, {
+      message: "Name must contain only alphabetic characters and spaces",
+    }),
+
+  Email: z
+    .string()
+    .email({ message: "Invalid email address" })
+    .max(100, { message: "Email cannot exceed 100 characters" }),
+
   PhoneNo: z
     .string()
-    .min(3, { message: "Phone number must be at least 3 characters" })
-    .max(50, { message: "Phone number cannot exceed 50 characters" })
-    .nonempty({ message: "Phone number is required" })
-    .regex(/^\+92/, { message: "Phone number must start with +92" }),
+    .length(11, { message: "Phone number must be exactly 11 digits" })
+    .regex(/^\d+$/, { message: "Phone number must be numeric" }),
+
+  HiredDate: z.string().nonempty({ message: "Hired Date is required" }),
+
   Description: z
     .string()
     .min(50, { message: "Description must be at least 50 characters" })
     .max(150, { message: "Description cannot exceed 150 characters" })
     .nonempty({ message: "Description is required" }),
-  HiredDate: z.string(),
+
   ShopId: z.string().nonempty({ message: "Shop is required" }),
 });
-
 export default function AddEmployeeForm() {
   const [shops, setShops] = useState([]);
 
@@ -44,8 +51,15 @@ export default function AddEmployeeForm() {
     const fetchData = async () => {
       try {
         const response = await fetchshopsByUserId();
-        setShops(response);
-        console.log(response);
+        console.log("Full response:", response);
+        // Assuming the response has a data field that contains the array
+        if (Array.isArray(response)) {
+          setShops(response); // Directly set if it's already an array
+        } else if (response?.data && Array.isArray(response.data)) {
+          setShops(response.data); // Set the data if it's an array
+        } else {
+          console.error("Unexpected response structure:", response);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -211,11 +225,15 @@ export default function AddEmployeeForm() {
                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md text-lg border-gray-300 p-4"
               >
                 <option value="">Select Shop</option>
-                {shops.map((shop) => (
-                  <option key={shop.ShopId} value={shop.ShopId}>
-                    {shop.Name}
-                  </option>
-                ))}
+                {Array.isArray(shops) ? (
+                  shops.map((shop) => (
+                    <option key={shop.ShopId} value={shop.ShopId}>
+                      {shop.Name}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No shops available</option>
+                )}
               </select>
             </div>
             {errors.ShopId && (

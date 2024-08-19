@@ -1,6 +1,6 @@
 export async function CreateInventories(inventorydata) {
   const token = localStorage.getItem("token");
-  const response = await fetch("localhost:3000/inventory", {
+  const response = await fetch("http://localhost:3000/inventory", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

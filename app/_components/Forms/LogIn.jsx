@@ -39,21 +39,21 @@ const LoginForm = () => {
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-  
+
       const responseData = await response.json();
       console.log("Response Data:", responseData); // Log response data
-  
+
       localStorage.setItem("token", responseData.token);
       setIsValid(true);
-  
+
       // Debug UserType
       console.log("UserType:", responseData.UserType);
-  
-      if (responseData.UserType === "Admin") {
+
+      if (responseData?.user?.UserType === "Admin") {
         router.push("/admin");
       } else {
         router.push("/");
@@ -63,7 +63,6 @@ const LoginForm = () => {
       setLoginError("Invalid email or password.");
     }
   };
-  
 
   return (
     <section className="h-screen flex items-start justify-center bg-gray-100 pt-16">

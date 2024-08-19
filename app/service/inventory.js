@@ -4,6 +4,8 @@ export async function fetchInventoryByShopId(id, page = 1, limit = 10) {
     limit: limit,
   }).toString();
 
+  console.log(queryString);
+
   const response = await fetch(
     `http://localhost:3000/inventory/shop/${id}?${queryString}`
   );
