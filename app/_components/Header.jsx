@@ -7,11 +7,11 @@ import { AuthenticationContext } from "../context/authentication";
 
 export default function Header() {
   const { isValid, setIsValid } = useContext(AuthenticationContext);
-  console.log("isvalid", isValid);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsValid(false);
+    window.location.reload();
   };
 
   const islogIn = () => {
@@ -30,11 +30,6 @@ export default function Header() {
       id: 2,
       name: "Bookings",
       path: "/mybooking",
-    },
-    {
-      id: 3,
-      name: "Contact Us",
-      path: "/contactus",
     },
   ];
 

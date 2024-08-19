@@ -1,13 +1,39 @@
-import React from "react";
+import React, { useContext } from "react";
+import Link from "next/link"; // Import Link from Next.js
+import { AuthenticationContext } from "../context/authentication";
+import { Button } from "@/components/ui/button";
 
-export default function headerAdmin() {
+export default function HeaderAdmin() { // Capitalized component name
+  const { isValid, setIsValid } = useContext(AuthenticationContext);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsValid(false);
+  };
+
+  const isLoggedIn = () => {
+    let token = localStorage.getItem("token");
+    return !!token;
+  };
+
   return (
     <header className="bg-white shadow p-4 flex justify-between items-center">
       <h1 className="text-xl font-semibold">Admin Dashboard</h1>
       <div>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">
-          Logout
-        </button>
+        {isLoggedIn() ? (
+          <Button
+            onClick={handleLogout}
+            className="hover:scale-105 transition-all ease-in-out"
+          >
+            Log Out
+          </Button>
+        ) : (
+          <Link href="/logIn">
+            <Button className="hover:scale-105 transition-all ease-in-out">
+              Log In
+            </Button>
+          </Link>
+        )}
       </div>
     </header>
   );
