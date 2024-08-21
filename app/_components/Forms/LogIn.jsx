@@ -54,7 +54,7 @@ const LoginForm = () => {
       console.log("UserType:", responseData.UserType);
 
       if (responseData?.user?.UserType === "Admin") {
-        router.push("/admin");
+        router.push("/admin/shop");
       } else {
         router.push("/");
       }

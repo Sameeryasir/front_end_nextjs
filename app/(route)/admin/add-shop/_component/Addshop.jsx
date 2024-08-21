@@ -13,13 +13,17 @@ const schema = z.object({
     .string()
     .min(3, { message: "Name must be at least 3 characters" })
     .max(50, { message: "Name cannot exceed 50 characters" })
-    .regex(/^[a-zA-Z\s]+$/, { message: "Name must contain only alphabetic characters and spaces" })
+    .regex(/^[a-zA-Z\s]+$/, {
+      message: "Name must contain only alphabetic characters and spaces",
+    })
     .nonempty({ message: "Name is required" }),
 
   Address: z
     .string()
-    .max(50, { message: "Address cannot exceed 50 characters" })    
-    .regex(/^[a-zA-Z\s]+$/, { message: "Address must contain only alphabetic characters and spaces" })
+    .max(50, { message: "Address cannot exceed 50 characters" })
+    .regex(/^[a-zA-Z\s]+$/, {
+      message: "Address must contain only alphabetic characters and spaces",
+    })
 
     .optional(),
 
@@ -27,14 +31,19 @@ const schema = z.object({
     .string()
     .min(3, { message: "Owner name must be at least 3 characters" })
     .max(50, { message: "Owner name cannot exceed 50 characters" })
-    .regex(/^[a-zA-Z\s]+$/, { message: "Owner name must contain only alphabetic characters and spaces" })
+    .regex(/^[a-zA-Z\s]+$/, {
+      message: "Owner name must contain only alphabetic characters and spaces",
+    })
     .nonempty({ message: "Owner is required" }),
 
   Description: z
     .string()
     .min(50, { message: "Description must be at least 50 characters" })
     .max(150, { message: "Description cannot exceed 150 characters" })
-    .regex(/^[a-zA-Z\s]+$/, { message: "Description name must contain only alphabetic characters and spaces" })
+    .regex(/^[a-zA-Z\s]+$/, {
+      message:
+        "Description name must contain only alphabetic characters and spaces",
+    })
     .nonempty({ message: "Description is required" }),
 
   CategoryId: z
@@ -45,7 +54,9 @@ const schema = z.object({
   ServicesId: z
     .array(z.number().positive().int())
     .optional()
-    .refine((array) => array.length > 0, { message: "At least one service must be selected" }),
+    .refine((array) => array.length > 0, {
+      message: "At least one service must be selected",
+    }),
 });
 export default function AddShop() {
   const [category, setCategory] = useState([]);
@@ -216,7 +227,7 @@ export default function AddShop() {
               htmlFor="CategoryId"
               className="block text-lg font-medium text-gray-700"
             >
-              Speciality
+              Category
             </label>
             <div className="mt-1 flex rounded-md shadow-sm">
               <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">

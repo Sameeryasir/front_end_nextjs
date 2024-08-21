@@ -1,10 +1,8 @@
-import React, { useContext } from "react";
+"use client";
 import Link from "next/link"; // Import Link from Next.js
-import { AuthenticationContext } from "../context/authentication";
 import { Button } from "@/components/ui/button";
 
 export default function HeaderAdmin() { // Capitalized component name
-  const { isValid, setIsValid } = useContext(AuthenticationContext);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

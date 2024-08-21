@@ -31,16 +31,7 @@ export default function Searchlist() {
       <h2 className="text-gray-500 text-base sm:text-lg md:text-xl text-center px-4">
         Search your Shop and book appointment with one click
       </h2>
-      <div className="flex w-full mt-3 max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl items-center space-x-2 px-4">
-        <Input
-          type="text"
-          placeholder="Search..."
-          className="flex-grow focus:outline-none"
-        />
-        <Button type="submit" className="flex-shrink-0">
-          <Search className="h-4 w-4 mr-2" /> Search
-        </Button>
-      </div>
+     
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-4">
         {category &&
           category.map((categories, index) => (

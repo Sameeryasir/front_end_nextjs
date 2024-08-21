@@ -150,11 +150,16 @@ export default function BookingList({ app, isValid }) {
                     {booking?.date}
                   </p>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <p className="text-sm text-gray-500 flex items-center gap-2">
-                    {booking?.services?.ServiceName}
-                  </p>
+                <td className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
+                  {booking?.services?.map((service, index) => (
+                    <span key={index}>
+                      {service.ServiceName}
+                      {index < booking.services.length - 1 && ", "}{" "}
+                      {/* Add a comma between services */}
+                    </span>
+                  ))}
                 </td>
+
                 <td className="px-6 py-4 whitespace-nowrap">
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <DollarSignIcon className="text-primary" />

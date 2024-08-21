@@ -29,17 +29,19 @@ export default function Appointment({ app }) {
         const response = await updatebyId(selectedAppointmentId);
         setAppointments(response);
 
-        // Play notification sound if new appointments are detected
-        if (JSON.stringify(response) !== JSON.stringify(prevAppointmentsRef.current)) {
+        if (
+          JSON.stringify(response) !==
+          JSON.stringify(prevAppointmentsRef.current)
+        ) {
           const audio = new Audio("/sounds/answer-tone.wav");
           audio.play();
         }
-        prevAppointmentsRef.current = response; // Update previous appointments
+        prevAppointmentsRef.current = response;
       } catch (error) {
         console.error("error fetching data", error);
       }
     };
-    
+
     if (selectedAppointmentId) {
       fetchdata();
     }
@@ -126,8 +128,15 @@ export default function Appointment({ app }) {
                 {booking?.employee?.Name}
               </td>
               <td className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
-                {booking?.services?.ServiceName}
+                {booking?.services?.map((service, index) => (
+                  <span key={index}>
+                    {service.ServiceName}
+                    {index < booking.services.length - 1 && ", "}{" "}
+                    {/* Add a comma between services */}
+                  </span>
+                ))}
               </td>
+
               <td className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
                 {booking?.Price
                   ? new Intl.NumberFormat("en-IN", {
