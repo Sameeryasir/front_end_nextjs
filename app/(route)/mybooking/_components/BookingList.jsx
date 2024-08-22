@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Clock, DollarSignIcon, MapPin, User, X } from "lucide-react";
+import { Calendar, Clock, DollarSignIcon, MapPin, User, X, Star } from "lucide-react";
+import { FaStar } from "react-icons/fa";
 import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
 import withAuth from "@/app/withAuth";
@@ -27,6 +28,21 @@ export default function BookingList({ app, isValid }) {
   const [apps, setApps] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState("");
+  const [ratingInfo, setRatingInfo] = useState({
+    visible: false,
+    appointmentId: null,
+    shopId: null,
+  });
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isTokenPresent, setIsTokenPresent] = useState(false);
+  const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsTokenPresent(!!token);
+  }, []);
 
   const handleAppointmentClick = (appointmentId) => {
     setSelectedAppointmentId(appointmentId);
@@ -41,6 +57,64 @@ export default function BookingList({ app, isValid }) {
   const closeModal = () => {
     setModalOpen(false);
     setModalImageUrl("");
+  };
+
+  const handleRateClick = (appointmentId, shopId) => {
+    setRatingInfo({ visible: true, appointmentId, shopId });
+    console.log(`Rate Appointment ID: ${appointmentId}, Shop ID: ${shopId}`);
+  };
+
+  const closeRatingModal = () => {
+    setRatingInfo({ visible: false, appointmentId: null, shopId: null });
+    setRating(0);
+    setHover(0);
+    setComment("");
+  };
+
+  const handleSubmitRating = async (e) => {
+    e.preventDefault();
+
+    if (!ratingInfo.shopId) {
+      console.error("Shop ID is missing");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/rating", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          Score: rating,
+          Comment: comment,
+          RatedAt: new Date().toISOString(),
+          ShopId: ratingInfo.shopId,
+          appId: ratingInfo.appointmentId, // Include the appointment ID for validation
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Rating added:", result);
+        closeRatingModal();
+      } else if (response.status === 500) {
+        // Show the error dialog if the appointment has already been rated
+        setErrorDialogVisible(true);
+      } else {
+        console.error("Failed to add rating");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
 
   useEffect(() => {
@@ -61,9 +135,7 @@ export default function BookingList({ app, isValid }) {
 
   if (!app) {
     console.error("No appointments available");
-    return (
-      <p className="text-red-500 text-center">No appointments available.</p>
-    );
+    return <p className="text-red-500 text-center">No appointments available.</p>;
   }
 
   return (
@@ -114,9 +186,7 @@ export default function BookingList({ app, isValid }) {
                         alt="Shop's profile picture"
                         width={80}
                         height={40}
-                        onClick={() =>
-                          handleImageClick(booking?.shop?.publicURL)
-                        }
+                        onClick={() => handleImageClick(booking?.shop?.publicURL)}
                       />
                     )}
                     <div className="ml-4">
@@ -155,7 +225,6 @@ export default function BookingList({ app, isValid }) {
                     <span key={index}>
                       {service.ServiceName}
                       {index < booking.services.length - 1 && ", "}{" "}
-                      {/* Add a comma between services */}
                     </span>
                   ))}
                 </td>
@@ -172,8 +241,15 @@ export default function BookingList({ app, isValid }) {
                       : "Price not available"}
                   </p>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap flex items-center gap-4">
                   <CancelAppointement AppointmentId={selectedAppointmentId} />
+                  <button
+                    onClick={() => handleRateClick(booking.AppointmentId, booking.shop.ShopId)}
+                    className="text-primary flex items-center gap-2 px-20 py-2 border border-primary rounded-md hover:bg-primary hover:text-white"
+                  >
+                    <Star className="h-4 w-4" />
+                    Rate
+                  </button>
                 </td>
               </tr>
             ))}
@@ -181,23 +257,75 @@ export default function BookingList({ app, isValid }) {
         </table>
       </div>
 
-      {/* Image Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
-          <div className="relative bg-white p-4 rounded-lg">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-primary"
-              onClick={closeModal}
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <Image
-              src={modalImageUrl}
-              alt="Larger view"
-              width={700}
-              height={700}
-              className="object-contain"
-            />
+      {/* Rating Modal */}
+      {ratingInfo.visible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Rate Appointment</h3>
+              <button onClick={closeRatingModal} className="text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitRating}>
+              <div className="flex items-center mb-4">
+                {Array.from({ length: 5 }, (_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={`text-xl ${index < (hover || rating) ? "text-yellow-400" : "text-gray-300"}`}
+                    onClick={() => setRating(index + 1)}
+                    onMouseEnter={() => setHover(index + 1)}
+                    onMouseLeave={() => setHover(rating)}
+                  >
+                    <FaStar />
+                  </button>
+                ))}
+              </div>
+              <div className="mb-4">
+                <textarea
+                  className="w-full border border-gray-300 rounded-md p-2"
+                  rows="4"
+                  placeholder="Leave a comment"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Error Dialog */}
+      {errorDialogVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Error</h3>
+              <button
+                onClick={() => setErrorDialogVisible(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-gray-700">This appointment has already been rated.</p>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setErrorDialogVisible(false)}
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { MapPin, User } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import BookingAppointment from "../../employee/_component/BookingAppointement";
 import Image from "next/image";
@@ -7,12 +7,21 @@ import { FaStar } from "react-icons/fa"; // Importing star icon from react-icons
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "leaflet/dist/leaflet.css";
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 
 const ShopDetail = ({ shop, isValid }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
+  const [isTokenPresent, setIsTokenPresent] = useState(false);
+
+  useEffect(() => {
+    // Check if the token is present in localStorage
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsTokenPresent(true);
+    }
+  }, []);
 
   const settings = {
     dots: true,
@@ -42,36 +51,42 @@ const ShopDetail = ({ shop, isValid }) => {
     ],
   };
 
-  const handleSubmitRating = async (e) => {
-    e.preventDefault();
+  // const handleSubmitRating = async (e) => {
+  //   e.preventDefault();
 
-    if (!shop?.ShopId) {
-      console.error('Shop ID is missing');
-      return;
-    }
+  //   if (!shop?.ShopId) {
+  //     console.error("Shop ID is missing");
+  //     return;
+  //   }
 
-    const response = await fetch('http://localhost:3000/rating', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        Score: rating,
-        Comment: comment,
-        RatedAt: new Date().toISOString(),
-        ShopId: shop.ShopId // Use the shop's ID here
-      }),
-    });
+  //   const token = localStorage.getItem("token");
 
-    if (response.ok) {
-      const result = await response.json();
-      console.log('Rating added:', result);
-    } else {
-      console.error('Failed to add rating');
-    }
-  };
+  //   if (!token) {
+  //     console.error("No token found");
+  //     return;
+  //   }
 
-  const position = shop?.location || [33.59142, 73.05257]; 
+  //   const response = await fetch("http://localhost:3000/rating", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //     body: JSON.stringify({
+  //       Score: rating,
+  //       Comment: comment,
+  //       RatedAt: new Date().toISOString(),
+  //       ShopId: shop.ShopId, // Use the shop's ID here
+  //     }),
+  //   });
+
+  //   if (response.ok) {
+  //     const result = await response.json();
+  //     console.log("Rating added:", result);
+  //   } else {
+  //     console.error("Failed to add rating");
+  //   }
+  // };
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap">
@@ -113,7 +128,7 @@ const ShopDetail = ({ shop, isValid }) => {
           {isValid && <BookingAppointment shop={shop} />}
         </div>
       </div>
-      
+
       {/* Slider for services */}
       <div className="w-full mt-8">
         <Slider {...settings}>
@@ -143,9 +158,12 @@ const ShopDetail = ({ shop, isValid }) => {
       </div>
 
       {/* Rating section */}
-      <div className="w-full mt-8">
+      {/* <div className="w-full mt-8">
         <h2 className="text-xl font-semibold mb-4">Rate this Shop</h2>
-        <form onSubmit={handleSubmitRating} className="flex flex-col items-center">
+        <form
+          onSubmit={handleSubmitRating}
+          className="flex flex-col items-center"
+        >
           <div className="flex mb-4">
             {[...Array(5)].map((star, index) => {
               const currentRating = index + 1;
@@ -157,14 +175,16 @@ const ShopDetail = ({ shop, isValid }) => {
                     name="rating"
                     value={currentRating}
                     onClick={() => setRating(currentRating)}
-                    style={{ display: 'none' }}
+                    style={{ display: "none" }}
                   />
                   <FaStar
                     size={30}
-                    color={currentRating <= (hover || rating) ? '#ffc107' : '#e4e5e9'}
+                    color={
+                      currentRating <= (hover || rating) ? "#ffc107" : "#e4e5e9"
+                    }
                     onMouseEnter={() => setHover(currentRating)}
                     onMouseLeave={() => setHover(0)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   />
                 </label>
               );
@@ -178,12 +198,15 @@ const ShopDetail = ({ shop, isValid }) => {
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-primary text-white rounded-md"
+            className={`px-4 py-2 bg-primary text-white rounded-md ${
+              !isTokenPresent ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={!isTokenPresent}
           >
             Submit Rating
           </button>
         </form>
-      </div>
+      </div> */}
     </div>
   );
 };
