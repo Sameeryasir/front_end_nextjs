@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,11 +28,12 @@ export default function Cancel({ AppointmentId }) {
     };
     fetchdata();
   }, []);
-  
+
   const handleSubmit = async () => {
     try {
-      const { success, data, error } = await DeleteAppointementsById(AppointmentId);
-      window.location.reload();
+      const { success, data, error } = await DeleteAppointementsById(
+        AppointmentId
+      );
 
       if (success) {
         setIsDeleted(true);
@@ -47,12 +48,12 @@ export default function Cancel({ AppointmentId }) {
   return (
     <div className="w-full">
       {isDeleted ? (
-        <BookingList app={app}/>
+        <BookingList app={app} />
       ) : (
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="w-full p-2 text-red-500 border border-red-500 rounded-md px-4 hover:bg-red-500 hover:text-white transition-all duration-300 ease-in-out">
-              Cancel 
+              Cancel
             </button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -65,7 +66,9 @@ export default function Cancel({ AppointmentId }) {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleSubmit}>Continue</AlertDialogAction>
+              <AlertDialogAction onClick={handleSubmit}>
+                Continue
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

@@ -2,11 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Calendar, Clock, DollarSignIcon, MapPin, User, X, Star } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSignIcon,
+  MapPin,
+  User,
+  X,
+  Star,
+} from "lucide-react";
 import { FaStar } from "react-icons/fa";
 import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
-import withAuth from "@/app/withAuth";
 
 const formatTimeTo12Hour = (time) => {
   if (!time) return "";
@@ -38,6 +45,9 @@ export default function BookingList({ app, isValid }) {
   const [comment, setComment] = useState("");
   const [isTokenPresent, setIsTokenPresent] = useState(false);
   const [errorDialogVisible, setErrorDialogVisible] = useState(false);
+  const [ratingError, setRatingError] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [generalError, setGeneralError] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,6 +83,23 @@ export default function BookingList({ app, isValid }) {
 
   const handleSubmitRating = async (e) => {
     e.preventDefault();
+
+    setRatingError("");
+    setCommentError("");
+    setGeneralError("");
+
+    if (rating === 0) {
+      setRatingError("Rating is required.");
+      return;
+    }
+
+    if (!comment.trim()) {
+      setCommentError("Comment is required.");
+      return;
+    } else if (/^\d+$/.test(comment.trim())) {
+      setCommentError("Comment should not contain only numeric values.");
+      return;
+    }
 
     if (!ratingInfo.shopId) {
       console.error("Shop ID is missing");
@@ -135,7 +162,9 @@ export default function BookingList({ app, isValid }) {
 
   if (!app) {
     console.error("No appointments available");
-    return <p className="text-red-500 text-center">No appointments available.</p>;
+    return (
+      <p className="text-red-500 text-center">No appointments available.</p>
+    );
   }
 
   return (
@@ -186,7 +215,9 @@ export default function BookingList({ app, isValid }) {
                         alt="Shop's profile picture"
                         width={80}
                         height={40}
-                        onClick={() => handleImageClick(booking?.shop?.publicURL)}
+                        onClick={() =>
+                          handleImageClick(booking?.shop?.publicURL)
+                        }
                       />
                     )}
                     <div className="ml-4">
@@ -244,7 +275,12 @@ export default function BookingList({ app, isValid }) {
                 <td className="px-6 py-4 whitespace-nowrap flex items-center gap-4">
                   <CancelAppointement AppointmentId={selectedAppointmentId} />
                   <button
-                    onClick={() => handleRateClick(booking.AppointmentId, booking.shop.ShopId)}
+                    onClick={() =>
+                      handleRateClick(
+                        booking.AppointmentId,
+                        booking.shop.ShopId
+                      )
+                    }
                     className="text-primary flex items-center gap-2 px-20 py-2 border border-primary rounded-md hover:bg-primary hover:text-white"
                   >
                     <Star className="h-4 w-4" />
@@ -262,8 +298,13 @@ export default function BookingList({ app, isValid }) {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-96">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Rate Appointment</h3>
-              <button onClick={closeRatingModal} className="text-gray-500 hover:text-gray-700">
+              <h3 className="text-lg font-medium text-gray-900">
+                Rate Appointment
+              </h3>
+              <button
+                onClick={closeRatingModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -273,7 +314,11 @@ export default function BookingList({ app, isValid }) {
                   <button
                     key={index}
                     type="button"
-                    className={`text-xl ${index < (hover || rating) ? "text-yellow-400" : "text-gray-300"}`}
+                    className={`text-xl ${
+                      index < (hover || rating)
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
                     onClick={() => setRating(index + 1)}
                     onMouseEnter={() => setHover(index + 1)}
                     onMouseLeave={() => setHover(rating)}
@@ -317,7 +362,9 @@ export default function BookingList({ app, isValid }) {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <p className="text-gray-700">This appointment has already been rated.</p>
+            <p className="text-gray-700">
+              This appointment has already been rated.
+            </p>
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setErrorDialogVisible(false)}

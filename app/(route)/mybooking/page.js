@@ -43,8 +43,8 @@ export default function MyBookings() {
       }
     };
 
-    fetchData(); 
-  }, [isValid, page, router, setIsValid, limit]); 
+    fetchData();
+  }, [isValid, page, router, setIsValid, limit]);
 
   useEffect(() => {
     const checkAuthStatus = () => {

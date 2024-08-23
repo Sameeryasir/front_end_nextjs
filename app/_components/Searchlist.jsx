@@ -31,7 +31,7 @@ export default function Searchlist() {
       <h2 className="text-gray-500 text-base sm:text-lg md:text-xl text-center px-4">
         Search your Shop and book appointment with one click
       </h2>
-     
+
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-4">
         {category &&
           category.map((categories, index) => (
@@ -40,7 +40,6 @@ export default function Searchlist() {
               key={index}
             >
               <div
-                
                 className="flex flex-col text-center items-center gap-2 p-3 sm:p-4 md:p-5 rounded-lg cursor-pointer transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
                 onClick={() => window.scrollTo({ top: 0 })}
               >
