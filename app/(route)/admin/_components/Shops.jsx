@@ -72,7 +72,34 @@ export default function Shops({ shops ,isValid}) {
     setUpdatedShop({ ...shop });
     setErrors({});
   };
+  const uploadImage = async () => {
+    if (!file) return "";
 
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://localhost:3000/shop/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include your auth token if needed
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const result = await response.json();
+      console.log("Upload Response:", result); // Log the response for debugging
+      setImageUrl(result.imagePath); // Set the image URL from the response
+      return result.imagePath; // Return image URL
+    } catch (error) {
+      console.error("Failed to upload image:", error.message);
+      return ""; // Return empty string on error
+    }
+  };
   const handleCancel = () => {
     setEditingId(null);
     setUpdatedShop({});

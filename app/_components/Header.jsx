@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -21,17 +21,25 @@ export default function Header() {
     return !!token;
   };
 
+  // Retrieve user data from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+
   const Menu = [
     {
       id: 1,
       name: "Home",
       path: "/",
     },
-    {
-      id: 2,
-      name: "Bookings",
-      path: "/mybooking",
-    },
+    // Conditionally add the Bookings menu item if the user is not an Admin
+    ...(user?.UserType !== "Admin"
+      ? [
+          {
+            id: 2,
+            name: "Bookings",
+            path: "/mybooking",
+          },
+        ]
+      : []),
   ];
 
   return (

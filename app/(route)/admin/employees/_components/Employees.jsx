@@ -27,29 +27,17 @@ const employeeSchema = z.object({
   Status: z.boolean(),
 
   HiredDate: z.string().nonempty("Hired Date is required"),
+  ImageUrl: z.string().optional().nullable(),
+
 });
-
-const formatDate = (date) => {
-  const d = new Date(date);
-  let month = "" + (d.getMonth() + 1);
-  let day = "" + d.getDate();
-  const year = d.getFullYear();
-
-  if (month.length < 2) month = "0" + month;
-  if (day.length < 2) day = "0" + day;
-
-  return [month, day, year].join("/");
-};
-
-const parseISODate = (dateString) => {
-  return new Date(dateString).toISOString().split("T")[0]; // Format date to YYYY-MM-DD
-};
 
 export default function Employees({ employees }) {
   const [employeeList, setEmployeeList] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [updatedEmployee, setUpdatedEmployee] = useState({});
   const [errors, setErrors] = useState({});
+  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     const initializedEmployees = employees.map((employee) => ({
@@ -60,6 +48,54 @@ export default function Employees({ employees }) {
     }));
     setEmployeeList(initializedEmployees);
   }, [employees]);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const uploadImage = async () => {
+    if (!file) return "";
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://localhost:3000/employee/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const result = await response.json();
+      setImageUrl(result.imagePath); // Set the image URL state
+      return result.imagePath;
+    } catch (error) {
+      console.error("Failed to upload image:", error.message);
+      return "";
+    }
+  };
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    let month = "" + (d.getMonth() + 1);
+    let day = "" + d.getDate();
+    const year = d.getFullYear();
+
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
+
+    return [month, day, year].join("/");
+  };
+
+  const parseISODate = (dateString) => {
+    return new Date(dateString).toISOString().split("T")[0]; // Format date to YYYY-MM-DD
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -83,6 +119,7 @@ export default function Employees({ employees }) {
     setEditingId(null);
     setUpdatedEmployee({});
     setErrors({});
+    setFile(null); // Clear file input on cancel
   };
 
   const validateEmployee = (employeeData) => {
@@ -101,14 +138,19 @@ export default function Employees({ employees }) {
   };
 
   const handleSave = async (id) => {
+    window.location.reload();
     console.log(`Saving updates for employee with id ${id}`, updatedEmployee);
 
     try {
+      // Upload image if a new file is selected
+      const uploadedImageUrl = file ? await uploadImage() : imageUrl;
+
       // Convert the HiredDate back to ISO format and rename Status to isPresent
       const employeeData = {
         ...updatedEmployee,
         HiredDate: new Date(updatedEmployee.HiredDate).toISOString(),
         isPresent: updatedEmployee.Status,
+        ImageUrl: uploadedImageUrl || updatedEmployee.ImageUrl, // Use uploaded image URL if available
       };
 
       // Validate the updated employee object
@@ -131,6 +173,7 @@ export default function Employees({ employees }) {
         // Reset the editing state
         setEditingId(null);
         setUpdatedEmployee({});
+        setFile(null); // Clear file input after saving
       }
     } catch (error) {
       console.error(`Failed to update employee with id ${id}:`, error);
@@ -190,13 +233,22 @@ export default function Employees({ employees }) {
           {employeeList.map((employee) => (
             <tr key={employee?.EmployeeId} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap flex items-center border-r border-gray-200">
-                {employee?.publicURL && (
-                  <Image
-                    src={employee?.publicURL}
-                    alt={employee?.Name}
-                    className="rounded-full object-cover"
-                    width={60}
-                    height={60}
+                {employee?.ImageUrl && (
+                  <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center">
+                    <Image
+                      src={employee?.publicURL}
+                      alt={employee?.Name}
+                      className="object-cover w-full h-full"
+                      width={64} // 16 * 4 = 64 pixels
+                      height={64} // 16 * 4 = 64 pixels
+                    />
+                  </div>
+                )}
+                {editingId === employee.EmployeeId && (
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    className="mt-2 text-sm text-gray-500"
                   />
                 )}
               </td>
