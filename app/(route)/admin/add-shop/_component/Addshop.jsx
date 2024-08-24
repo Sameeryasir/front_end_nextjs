@@ -8,6 +8,8 @@ import { fetchCategory } from "@/app/service/Category";
 import { fetchService } from "@/app/service/Service";
 import { useRouter } from "next/navigation";
 import { FiUser, FiMail, FiBriefcase, FiMapPin } from "react-icons/fi";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 const schema = z.object({
   Name: z
     .string()
@@ -24,7 +26,6 @@ const schema = z.object({
     .regex(/^[a-zA-Z\s]+$/, {
       message: "Address must contain only alphabetic characters and spaces",
     })
-
     .optional(),
 
   Owner: z
@@ -41,8 +42,7 @@ const schema = z.object({
     .min(50, { message: "Description must be at least 50 characters" })
     .max(150, { message: "Description cannot exceed 150 characters" })
     .regex(/^[a-zA-Z\s]+$/, {
-      message:
-        "Description name must contain only alphabetic characters and spaces",
+      message: "Description must contain only alphabetic characters and spaces",
     })
     .nonempty({ message: "Description is required" }),
 
@@ -57,11 +57,15 @@ const schema = z.object({
     .refine((array) => array.length > 0, {
       message: "At least one service must be selected",
     }),
+
+  ImageUrl: z.string().optional().nullable(), // Allow null if no image is provided
 });
+
 export default function AddShop() {
   const [category, setCategory] = useState([]);
   const [services, setServices] = useState([]);
-  const router = useRouter();
+  const [file, setFile] = useState(null);
+  const [ImageUrl, setImageUrl] = useState(""); // State for image URL
 
   const {
     register,
@@ -73,6 +77,7 @@ export default function AddShop() {
     resolver: zodResolver(schema),
     defaultValues: {
       ServicesId: [],
+      ImageUrl: "", // Ensure default value is an empty string
     },
   });
 
@@ -90,13 +95,57 @@ export default function AddShop() {
     fetchData();
   }, []);
 
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const uploadImage = async () => {
+    if (!file) return "";
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://localhost:3000/shop/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include your auth token if needed
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const result = await response.json();
+      console.log("Upload Response:", result); // Log the response for debugging
+      setImageUrl(result.imagePath); // Set the image URL from the response
+      return result.imagePath; // Return image URL
+    } catch (error) {
+      console.error("Failed to upload image:", error.message);
+      return ""; // Return empty string on error
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
-      console.log("Data submitted:", data);
-      const response = await CreateShop(data);
+      // Upload image first and get the URL
+      const uploadedImageUrl = file ? await uploadImage() : "";
+
+      // Prepare shop data with imageUrl
+      const shopData = {
+        ...data,
+        ImageUrl: uploadedImageUrl || imageUrl, // Use uploadedImageUrl if available
+      };
+
+      console.log("Shop Data being sent:", shopData); // Debugging: Check the final shop data
+
+      const response = await CreateShop(shopData);
       console.log("Shop created successfully:", response);
     } catch (error) {
       console.error("Failed to create shop:", error.message);
+      // Handle error here (show error message, etc.)
     }
   };
 
@@ -240,7 +289,7 @@ export default function AddShop() {
                 })}
                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md text-lg border-gray-300 p-4"
               >
-                <option value="">Select a Speciality</option>
+                <option value="">Select a Category</option>
                 {category.map((item) => (
                   <option key={item?.id} value={item?.id}>
                     {item.Name}
@@ -283,13 +332,37 @@ export default function AddShop() {
             </div>
           </div>
 
+          <div>
+            <label
+              htmlFor="file"
+              className="block text-lg font-medium text-gray-700"
+            >
+              Upload Image
+            </label>
+            <input
+              type="file"
+              id="file"
+              onChange={handleFileChange}
+              className="mt-1 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:border file:border-gray-300
+                file:rounded-md file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100
+              "
+            />
+          </div>
+
           <div className="flex items-center justify-end mt-8">
-            <button
+            <Button
               type="submit"
               className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Add Shop
-            </button>
+            </Button>
+
+            
+            
           </div>
         </form>
       </div>

@@ -30,6 +30,7 @@ export default function Cancel({ AppointmentId }) {
   }, []);
 
   const handleSubmit = async () => {
+    window.location.reload()
     try {
       const { success, data, error } = await DeleteAppointementsById(
         AppointmentId

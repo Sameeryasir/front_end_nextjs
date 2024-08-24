@@ -84,15 +84,18 @@ export default function BookingList({ app, isValid }) {
   const handleSubmitRating = async (e) => {
     e.preventDefault();
 
+    // Reset error messages
     setRatingError("");
     setCommentError("");
     setGeneralError("");
 
+    // Validate rating
     if (rating === 0) {
       setRatingError("Rating is required.");
       return;
     }
 
+    // Validate comment
     if (!comment.trim()) {
       setCommentError("Comment is required.");
       return;
@@ -101,15 +104,17 @@ export default function BookingList({ app, isValid }) {
       return;
     }
 
+    // Ensure shopId is present
     if (!ratingInfo.shopId) {
-      console.error("Shop ID is missing");
+      setGeneralError("Shop ID is missing");
       return;
     }
 
     const token = localStorage.getItem("token");
 
+    // Ensure token is present
     if (!token) {
-      console.error("No token found");
+      setGeneralError("No token found");
       return;
     }
 
@@ -137,9 +142,10 @@ export default function BookingList({ app, isValid }) {
         // Show the error dialog if the appointment has already been rated
         setErrorDialogVisible(true);
       } else {
-        console.error("Failed to add rating");
+        setGeneralError("Failed to add rating");
       }
     } catch (error) {
+      setGeneralError("An error occurred while submitting the rating.");
       console.error("An error occurred:", error);
     }
   };
@@ -188,13 +194,13 @@ export default function BookingList({ app, isValid }) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
                 Service
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 whitespace-nowrap">
                 Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-4 whitespace-nowrap">
                 Action
               </th>
             </tr>
@@ -259,7 +265,6 @@ export default function BookingList({ app, isValid }) {
                     </span>
                   ))}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap">
                   <p className="text-sm text-gray-500 flex items-center gap-2">
                     <DollarSignIcon className="text-primary" />
@@ -327,6 +332,9 @@ export default function BookingList({ app, isValid }) {
                   </button>
                 ))}
               </div>
+              {ratingError && (
+                <p className="text-red-500 text-sm mb-4">{ratingError}</p>
+              )}
               <div className="mb-4">
                 <textarea
                   className="w-full border border-gray-300 rounded-md p-2"
@@ -335,7 +343,13 @@ export default function BookingList({ app, isValid }) {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
+                {commentError && (
+                  <p className="text-red-500 text-sm mt-2">{commentError}</p>
+                )}
               </div>
+              {generalError && (
+                <p className="text-red-500 text-sm mb-4">{generalError}</p>
+              )}
               <div className="flex justify-end">
                 <button
                   type="submit"

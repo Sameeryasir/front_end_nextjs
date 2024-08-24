@@ -48,6 +48,7 @@ const LoginForm = () => {
       console.log("Response Data:", responseData); // Log response data
 
       localStorage.setItem("token", responseData.token);
+      localStorage.setItem("user", JSON.stringify(responseData?.user));
       setIsValid(true);
 
       // Debug UserType

@@ -8,12 +8,18 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import Ratings from "@/app/(route)/ratings/_component/Ratings";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import AddShop from "@/app/(route)/admin/add-shop/_component/Addshop";
 
 const ShopDetail = ({ shop, isValid }) => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
   const [isTokenPresent, setIsTokenPresent] = useState(false);
+
+  console.log("shop", shop);
 
   useEffect(() => {
     // Check if the token is present in localStorage
@@ -50,43 +56,19 @@ const ShopDetail = ({ shop, isValid }) => {
       },
     ],
   };
+  let user = localStorage.getItem("user");
 
-  // const handleSubmitRating = async (e) => {
-  //   e.preventDefault();
+  if (user) {
+    user = JSON.parse(user);
+  } else {
+    console.log("No token found");
+  }
 
-  //   if (!shop?.ShopId) {
-  //     console.error("Shop ID is missing");
-  //     return;
-  //   }
-
-  //   const token = localStorage.getItem("token");
-
-  //   if (!token) {
-  //     console.error("No token found");
-  //     return;
-  //   }
-
-  //   const response = await fetch("http://localhost:3000/rating", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //     body: JSON.stringify({
-  //       Score: rating,
-  //       Comment: comment,
-  //       RatedAt: new Date().toISOString(),
-  //       ShopId: shop.ShopId, // Use the shop's ID here
-  //     }),
-  //   });
-
-  //   if (response.ok) {
-  //     const result = await response.json();
-  //     console.log("Rating added:", result);
-  //   } else {
-  //     console.error("Failed to add rating");
-  //   }
-  // };
+  const handleViewReviews = () => {
+    // Navigate to the reviews page or open a modal
+    // Replace this with the actual navigation logic or modal handling
+    console.log("View Reviews button clicked");
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap">
@@ -125,7 +107,21 @@ const ShopDetail = ({ shop, isValid }) => {
           <p className="text-gray-700 mb-6">{shop?.Description}</p>
         </div>
         <div className="w-full flex justify-center md:justify-start">
-          {isValid && <BookingAppointment shop={shop} />}
+          {isValid && user?.UserId !== shop?.user?.UserId && (
+            <BookingAppointment shop={shop} />
+          )}
+        </div>
+
+        {/* View Reviews Button */}
+        <div className="w-full mt-4 flex justify-center md:justify-start ">
+          <Link href={`/ratings/${shop.Name}-${shop.ShopId}`}>
+            <Button
+              onClick={handleViewReviews}
+              className="px-4 py-2 bg-primary text-white rounded-md"
+            >
+              View Reviews
+            </Button>
+          </Link>
         </div>
       </div>
 

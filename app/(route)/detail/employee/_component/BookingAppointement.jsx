@@ -154,57 +154,64 @@ export default function BookingAppointment({ shop }) {
     }, 0);
   };
 
-  const handleSubmit = async () => {
-    let sound = new Audio("/sounds/answer-tone.wav");
-    let sound2 = new Audio("/sounds/error.mp3");
-    const appointmentData = {
-      date: date.toISOString().split("T")[0],
-      Time: selectedTimeSlot,
-      EmployeeId: selectedEmployee,
-      ShopId: shop?.ShopId,
-      ServicesId: selectedServices,
-      Price: calculateTotalPrice(),
-    };
+ 
 
-    const token = localStorage.getItem("token");
-
-    console.log("Submitting appointment data:", appointmentData);
-
-    try {
-      const response = await fetch("http://localhost:3000/appointement", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(appointmentData),
-      });
-
-      if (!response.ok) {
-        sound2.play();
-        if (response.status === 400) {
+    const handleSubmit = async () => {
+      let sound = new Audio("/sounds/answer-tone.wav");
+      let sound2 = new Audio("/sounds/error.mp3");
+    
+      // Normalize the date to avoid timezone issues
+      const normalizedDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      
+      const appointmentData = {
+        date: normalizedDate.toISOString().split("T")[0], // Use normalized date
+        Time: selectedTimeSlot,
+        EmployeeId: selectedEmployee,
+        ShopId: shop?.ShopId,
+        ServicesId: selectedServices,
+        Price: calculateTotalPrice(),
+      };
+    
+      const token = localStorage.getItem("token");
+    
+      console.log("Submitting appointment data:", appointmentData);
+    
+      try {
+        const response = await fetch("http://localhost:3000/appointement", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(appointmentData),
+        });
+    
+        if (!response.ok) {
+          sound2.play();
+          if (response.status === 400) {
+            setIsDialogOpen(false);
+            setIsErrorDialogOpen(true);
+          } else {
+            throw new Error("Network response was not ok");
+          }
+        } else {
+          sound.play();
+          const data = await response.json();
+          console.log("Appointment successfully added:", data);
+          setErrorMessage("");
+          setIsDialogOpen(false);
+          setIsConfirmationDialogOpen(true);
+        }
+      } catch (error) {
+        console.error("Error adding appointment:", error);
+        if (!errorMessage) {
+          setErrorMessage("An error occurred while booking the appointment.");
           setIsDialogOpen(false);
           setIsErrorDialogOpen(true);
-        } else {
-          throw new Error("Network response was not ok");
         }
-      } else {
-        sound.play();
-        const data = await response.json();
-        console.log("Appointment successfully added:", data);
-        setErrorMessage("");
-        setIsDialogOpen(false);
-        setIsConfirmationDialogOpen(true);
       }
-    } catch (error) {
-      console.error("Error adding appointment:", error);
-      if (!errorMessage) {
-        setErrorMessage("An error occurred while booking the appointment.");
-        setIsDialogOpen(false);
-        setIsErrorDialogOpen(true);
-      }
-    }
-  };
+    };
+    
 
   return (
     <div>

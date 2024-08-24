@@ -10,6 +10,7 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsValid(false);
     window.location.reload();
   };
