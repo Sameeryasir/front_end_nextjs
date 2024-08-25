@@ -247,7 +247,7 @@ export default function Shops({ shops ,isValid}) {
                       href={`/admin/mybookings/${item?.Name}-${item?.ShopId}`}
                     >
                       <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        className="px-1 py-2 bg-blue-500 text-white rounded"
                         onClick={() => handleViewAppointments(item?.ShopId)}
                       >
                         View Appointments

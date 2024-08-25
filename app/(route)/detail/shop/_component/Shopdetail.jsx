@@ -19,10 +19,7 @@ const ShopDetail = ({ shop, isValid }) => {
   const [comment, setComment] = useState("");
   const [isTokenPresent, setIsTokenPresent] = useState(false);
 
-  console.log("shop", shop);
-
   useEffect(() => {
-    // Check if the token is present in localStorage
     const token = localStorage.getItem("token");
     if (token) {
       setIsTokenPresent(true);
@@ -49,29 +46,27 @@ const ShopDetail = ({ shop, isValid }) => {
         },
       },
       {
-        breakpoint: 480,
+        breakpoint: 640,
         settings: {
           slidesToShow: 1,
         },
       },
     ],
   };
+
   let user = localStorage.getItem("user");
 
   if (user) {
     user = JSON.parse(user);
-  } else {
-    console.log("No token found");
   }
 
   const handleViewReviews = () => {
-    // Navigate to the reviews page or open a modal
-    // Replace this with the actual navigation logic or modal handling
     console.log("View Reviews button clicked");
   };
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg border border-gray-200 flex flex-wrap">
+      {/* Shop Image */}
       <div className="w-full md:w-1/2 mb-4 md:mb-0">
         <div className="relative">
           {shop?.publicURL && (
@@ -83,24 +78,22 @@ const ShopDetail = ({ shop, isValid }) => {
           )}
         </div>
       </div>
+
+      {/* Shop Details */}
       <div className="w-full md:w-1/2 p-4 md:p-6">
         <p className="text-gray-600 mb-2">WELCOME TO</p>
         <h1 className="text-2xl md:text-3xl font-bold mb-4">{shop?.Name}</h1>
         <div className="mb-4">
-          <p className="text-gray-700 mb-2">
-            <span className="inline-flex items-center">
-              <div className="flex gap-2 mt-2 text-gray-500">
-                <MapPin className="text-primary" />
-                <h2 className="text-lg md:text-xl font-semibold">
-                  {shop?.Address}
-                </h2>
-              </div>
-            </span>
-          </p>
-          <p className="flex gap-2 mt-2 text-gray-500">
+          <div className="flex gap-2 mt-2 text-gray-500 items-center">
+            <MapPin className="text-primary" />
+            <h2 className="text-lg md:text-xl font-semibold">
+              {shop?.Address}
+            </h2>
+          </div>
+          <div className="flex gap-2 mt-2 text-gray-500 items-center">
             <User className="text-primary" />
             <h2 className="text-lg md:text-xl font-semibold">{shop?.Owner}</h2>
-          </p>
+          </div>
           <p className="text-gray-600">{shop?.timing}</p>
         </div>
         <div className="mb-4">
@@ -113,7 +106,7 @@ const ShopDetail = ({ shop, isValid }) => {
         </div>
 
         {/* View Reviews Button */}
-        <div className="w-full mt-4 flex justify-center md:justify-start ">
+        <div className="w-full mt-4 flex justify-center md:justify-start">
           <Link href={`/ratings/${shop.Name}-${shop.ShopId}`}>
             <Button
               onClick={handleViewReviews}
@@ -125,7 +118,7 @@ const ShopDetail = ({ shop, isValid }) => {
         </div>
       </div>
 
-      {/* Slider for services */}
+      {/* Slider for Services */}
       <div className="w-full mt-8">
         <Slider {...settings}>
           {shop?.services?.map((service) => (
@@ -152,57 +145,6 @@ const ShopDetail = ({ shop, isValid }) => {
           ))}
         </Slider>
       </div>
-
-      {/* Rating section */}
-      {/* <div className="w-full mt-8">
-        <h2 className="text-xl font-semibold mb-4">Rate this Shop</h2>
-        <form
-          onSubmit={handleSubmitRating}
-          className="flex flex-col items-center"
-        >
-          <div className="flex mb-4">
-            {[...Array(5)].map((star, index) => {
-              const currentRating = index + 1;
-
-              return (
-                <label key={index}>
-                  <input
-                    type="radio"
-                    name="rating"
-                    value={currentRating}
-                    onClick={() => setRating(currentRating)}
-                    style={{ display: "none" }}
-                  />
-                  <FaStar
-                    size={30}
-                    color={
-                      currentRating <= (hover || rating) ? "#ffc107" : "#e4e5e9"
-                    }
-                    onMouseEnter={() => setHover(currentRating)}
-                    onMouseLeave={() => setHover(0)}
-                    style={{ cursor: "pointer" }}
-                  />
-                </label>
-              );
-            })}
-          </div>
-          <textarea
-            className="w-full p-2 border border-gray-300 rounded-md mb-4"
-            placeholder="Leave a comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <button
-            type="submit"
-            className={`px-4 py-2 bg-primary text-white rounded-md ${
-              !isTokenPresent ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={!isTokenPresent}
-          >
-            Submit Rating
-          </button>
-        </form>
-      </div> */}
     </div>
   );
 };

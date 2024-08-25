@@ -24,23 +24,32 @@ export default function Header() {
   // Retrieve user data from localStorage
   const user = JSON.parse(localStorage.getItem("user"));
 
+  // Define the base menu
   const Menu = [
     {
       id: 1,
       name: "Home",
       path: "/",
     },
-    // Conditionally add the Bookings menu item if the user is not an Admin
-    ...(user?.UserType !== "Admin"
-      ? [
-          {
-            id: 2,
-            name: "Bookings",
-            path: "/mybooking",
-          },
-        ]
-      : []),
   ];
+
+  // Conditionally add the Bookings menu item if the user is not an Admin
+  if (user?.UserType !== "Admin") {
+    Menu.push({
+      id: 2,
+      name: "Bookings",
+      path: "/mybooking",
+    });
+  }
+
+  // Conditionally add the Admin menu item if the user is an Admin
+  if (user?.UserType === "Admin") {
+    Menu.push({
+      id: 3,
+      name: "Admin",
+      path: "/admin/shop",
+    });
+  }
 
   return (
     <div className="flex items-center justify-between p-4 shadow-sm">

@@ -6,10 +6,10 @@ import { z } from "zod";
 import { CreateShop } from "@/app/service/createShop";
 import { fetchCategory } from "@/app/service/Category";
 import { fetchService } from "@/app/service/Service";
-import { useRouter } from "next/navigation";
 import { FiUser, FiMail, FiBriefcase, FiMapPin } from "react-icons/fi";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
 const schema = z.object({
   Name: z
     .string()
@@ -66,6 +66,7 @@ export default function AddShop() {
   const [services, setServices] = useState([]);
   const [file, setFile] = useState(null);
   const [ImageUrl, setImageUrl] = useState(""); // State for image URL
+  const [showModal, setShowModal] = useState(false); // State for showing modal
 
   const {
     register,
@@ -143,6 +144,7 @@ export default function AddShop() {
 
       const response = await CreateShop(shopData);
       console.log("Shop created successfully:", response);
+      setShowModal(true); // Show modal on successful shop creation
     } catch (error) {
       console.error("Failed to create shop:", error.message);
       // Handle error here (show error message, etc.)
@@ -161,6 +163,11 @@ export default function AddShop() {
       }
     }
     setValue("ServicesId", selectedValues);
+  };
+
+  const closeModal = () => {
+    window.location.reload(); 
+    setShowModal(false);
   };
 
   return (
@@ -360,11 +367,22 @@ export default function AddShop() {
             >
               Add Shop
             </Button>
-
-            
-            
           </div>
         </form>
+
+        {showModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+              <h2 className="text-2xl font-bold mb-4">Shop Created</h2>
+              <p>Your shop has been created successfully.</p>
+              <div className="mt-6">
+                <Button onClick={closeModal} className="px-6 py-3 text-white bg-blue-500 rounded-lg">
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
