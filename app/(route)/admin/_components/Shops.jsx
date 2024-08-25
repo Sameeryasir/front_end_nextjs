@@ -12,12 +12,14 @@ import { updatebyStatus } from "@/app/service/updateshopstatus";
 import { UpdateShop } from "@/app/service/updateshop";
 import { deleteShopById } from "@/app/service/Deleteshop";
 
-export default function Shops({ shops ,isValid}) {
+export default function Shops({ shops, isValid }) {
   const [shopStatuses, setShopStatuses] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [updatedShop, setUpdatedShop] = useState({});
   const [errors, setErrors] = useState({});
   const [localShops, setLocalShops] = useState(shops);
+  const [file, setFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
     if (shops) {
@@ -43,17 +45,16 @@ export default function Shops({ shops ,isValid}) {
   };
 
   const handleDelete = async (ShopId) => {
-    
-    const isConfirmed = window.confirm(`Are you sure you want to delete the shop with ID: ${ShopId}?`);
-  
-    // Proceed with deletion if user 
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete the shop with ID: ${ShopId}?`
+    );
+
     if (isConfirmed) {
       console.log(`Deleting shop ID: ${ShopId}`);
-  
+
       try {
         await deleteShopById(ShopId);
-  
-        // Update the local state to remove the deleted shop
+
         setLocalShops((prevShops) =>
           prevShops.filter((shop) => shop.ShopId !== ShopId)
         );
@@ -61,19 +62,23 @@ export default function Shops({ shops ,isValid}) {
         console.error(`Failed to delete shop ID: ${ShopId}`, error);
       }
     } else {
-      // Optionally handle the case where the user cancels the deletion
       console.log(`Deletion of shop ID: ${ShopId} was cancelled.`);
     }
   };
-  
 
   const handleEdit = (shop) => {
     setEditingId(shop.ShopId);
     setUpdatedShop({ ...shop });
     setErrors({});
+    setImageUrl(shop.publicURL); // Initialize image URL with current image
   };
+
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
+
   const uploadImage = async () => {
-    if (!file) return "";
+    if (!file) return imageUrl;
 
     try {
       const formData = new FormData();
@@ -83,7 +88,7 @@ export default function Shops({ shops ,isValid}) {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include your auth token if needed
+          Authorization: `Bearer ${localStorage.getItem("token")}`, 
         },
       });
 
@@ -92,37 +97,46 @@ export default function Shops({ shops ,isValid}) {
       }
 
       const result = await response.json();
-      console.log("Upload Response:", result); // Log the response for debugging
-      setImageUrl(result.imagePath); // Set the image URL from the response
-      return result.imagePath; // Return image URL
+      console.log("Upload Response:", result);
+      setImageUrl(result.imagePath);
+      return result.imagePath;
     } catch (error) {
       console.error("Failed to upload image:", error.message);
-      return ""; // Return empty string on error
+      return "";
     }
   };
+
   const handleCancel = () => {
     setEditingId(null);
     setUpdatedShop({});
     setErrors({});
+    setFile(null);
+    setImageUrl("");
   };
 
   const handleSave = async (id) => {
+    window.location.reload();
     console.log(`Saving updates for shop with id ${id}`, updatedShop);
 
     try {
-      // Update the shop details
-      const response = await UpdateShop(id, updatedShop);
+      const uploadedImageUrl = await uploadImage();
+
+      const response = await UpdateShop(id, {
+        ...updatedShop,
+        ImageUrl: uploadedImageUrl,
+      });
       console.log("Update response:", response);
 
-      // Update the shop's details in the local state without changing the status
       setLocalShops((prevShops) =>
         prevShops.map((shop) =>
-          shop.ShopId === id ? { ...shop, ...updatedShop } : shop
+          shop.ShopId === id ? { ...shop, ...updatedShop, ImageUrl: uploadedImageUrl } : shop
         )
       );
 
       setEditingId(null);
       setUpdatedShop({});
+      setFile(null);
+      setImageUrl("");
     } catch (error) {
       console.error(`Failed to update shop with id ${id}:`, error);
     }
@@ -151,6 +165,11 @@ export default function Shops({ shops ,isValid}) {
     }
   };
 
+  const formatImageUrl = (url) => {
+    if (!url) return "";
+    return url.startsWith("/") || url.startsWith("http") ? url : `/${url}`;
+  };
+
   return (
     <div className="max-w-full mx-auto overflow-hidden">
       <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
@@ -162,17 +181,36 @@ export default function Shops({ shops ,isValid}) {
             <div className="flex justify-between p-8 pb-0 gap-6">
               <div className="flex gap-6">
                 <div className="md:flex-shrink-0">
-                  {item?.publicURL && (
-                    <Image
-                      className="rounded-xl h-48 w-full object-contain md:h-full md:w-48"
-                      src={item?.publicURL}
-                      alt="Product Image"
-                      width={200}
-                      height={200}
-                    />
+                  {editingId === item.ShopId ? (
+                    <div>
+                      <input
+                        type="file"
+                        onChange={handleFileChange}
+                        className="border border-gray-300 p-2 rounded mb-2 w-full"
+                      />
+                      {imageUrl && (
+                        <Image
+                          className="rounded-full h-48 w-48 object-cover"
+                          src={formatImageUrl(imageUrl)}
+                          alt="Shop Image"
+                          width={200}
+                          height={200}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    item?.publicURL && (
+                      <Image
+                        className="rounded-full h-48 w-48 object-cover"
+                        src={formatImageUrl(item?.publicURL)}
+                        alt="Shop Image"
+                        width={200}
+                        height={200}
+                      />
+                    )
                   )}
                 </div>
-                <div>
+                <div className="flex flex-col justify-between flex-1 mt-8"> {/* Increased margin-top to move the details further downward */}
                   {editingId === item.ShopId ? (
                     <>
                       <input
@@ -222,12 +260,12 @@ export default function Shops({ shops ,isValid}) {
                       </p>
                     </div>
                   )}
-                  <div className="mt-4 grid gap-4">
+                  <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:gap-4">
                     <Link
                       href={`/admin/employees/${item?.Name}-${item?.ShopId}`}
                     >
                       <button
-                        className="px-4 py-2 bg-green-500 text-white rounded"
+                        className="flex-1 px-2 py-1 bg-green-500 text-white rounded text-center text-sm"
                         onClick={() => handleViewEmployees(item?.ShopId)}
                       >
                         View Employee
@@ -237,7 +275,7 @@ export default function Shops({ shops ,isValid}) {
                       href={`/admin/inventory/${item?.Name}-${item?.ShopId}`}
                     >
                       <button
-                        className="px-4 py-2 bg-yellow-500 text-white rounded"
+                        className="flex-1 px-2 py-1 bg-yellow-500 text-white rounded text-center text-sm"
                         onClick={() => handleViewInventory(item?.ShopId)}
                       >
                         View Inventory
@@ -247,7 +285,7 @@ export default function Shops({ shops ,isValid}) {
                       href={`/admin/mybookings/${item?.Name}-${item?.ShopId}`}
                     >
                       <button
-                        className="px-1 py-2 bg-blue-500 text-white rounded"
+                        className="flex-1 px-2 py-1 bg-blue-500 text-white rounded text-center text-sm"
                         onClick={() => handleViewAppointments(item?.ShopId)}
                       >
                         View Appointments

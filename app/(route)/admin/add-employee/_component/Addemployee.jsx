@@ -125,6 +125,7 @@ export default function AddEmployeeForm() {
   };
 
   const closeDialog = () => {
+    window.location.reload();
     setShowDialog(false);
   };
 
