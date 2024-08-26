@@ -14,6 +14,7 @@ import {
 import { FaStar } from "react-icons/fa";
 import CancelAppointement from "./CancelAppointement";
 import { updatebyId } from "@/app/service/Update";
+import { updateRating } from "@/app/service/updaterating";
 
 const formatTimeTo12Hour = (time) => {
   if (!time) return "";
@@ -155,7 +156,7 @@ export default function BookingList({ app, isValid }) {
       if (!selectedAppointmentId) return;
       console.log("Fetching data for ID:", selectedAppointmentId);
       try {
-        const response = await updatebyId(selectedAppointmentId);
+        const response = await updateRating(selectedAppointmentId);
         console.log("Data fetched:", response);
         setApps(response);
       } catch (error) {
