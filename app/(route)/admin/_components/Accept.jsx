@@ -4,6 +4,7 @@ import { updatebyId } from "@/app/service/Update";
 
 export default function Accept({ AppointmentId }) {
   const handleSubmit = async () => {
+    window.location.reload();
     try {
       const response = await updatebyId(AppointmentId);
 
@@ -22,7 +23,7 @@ export default function Accept({ AppointmentId }) {
       onClick={handleSubmit}
       className="w-full p-2 px-4 border border-primary bg-white text-primary hover:bg-primary hover:text-white"
     >
-      Accept
+      Finish
     </Button>
   );
 }

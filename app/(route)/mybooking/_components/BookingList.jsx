@@ -32,7 +32,7 @@ const formatTimeTo12Hour = (time) => {
 
 export default function BookingList({ app, isValid }) {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-  const [apps, setApps] = useState([]);
+  const [apps, setApps] = useState(app || []);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState("");
   const [ratingInfo, setRatingInfo] = useState({
@@ -166,10 +166,9 @@ export default function BookingList({ app, isValid }) {
     fetchData();
   }, [selectedAppointmentId]);
 
-  if (!app) {
-    console.error("No appointments available");
+  if (!app || app.length === 0) {
     return (
-      <p className="text-red-500 text-center">No appointments available.</p>
+      <p className="text-red-500 text-center">No appointments are booked.</p>
     );
   }
 
@@ -197,12 +196,8 @@ export default function BookingList({ app, isValid }) {
               <th className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm text-gray-600 border-r border-gray-200">
                 Service
               </th>
-              <th className="px-6 py-4 whitespace-nowrap">
-                Price
-              </th>
-              <th className="px-6 py-4 whitespace-nowrap">
-                Action
-              </th>
+              <th className="px-6 py-4 whitespace-nowrap">Price</th>
+              <th className="px-6 py-4 whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

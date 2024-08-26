@@ -47,9 +47,12 @@ export default function Appointment({ app }) {
     }
   }, [selectedAppointmentId]);
 
-  if (!appointments) {
-    console.error("Appointments are not available");
-    return null;
+  if (!appointments || appointments.length === 0) {
+    return (
+      <div className="p-4 text-center text-gray-600">
+        No appointments are booked
+      </div>
+    );
   }
 
   const formatTime = (timeString) => {
@@ -149,6 +152,9 @@ export default function Appointment({ app }) {
               <td className="px-4 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-sm font-medium">
                 <div className="flex space-x-2 sm:space-x-3">
                   <Cancel AppointmentId={booking.AppointmentId} />
+                </div>
+                <div className="flex space-x-2 sm:space-x-3">
+                  <Accept AppointmentId={booking.AppointmentId} />
                 </div>
               </td>
             </tr>

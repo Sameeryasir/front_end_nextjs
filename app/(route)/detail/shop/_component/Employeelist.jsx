@@ -74,19 +74,7 @@ export default function EmployeeList({ shop }) {
                 </p>
                 <p className="text-gray-500">{employee.Position}</p>
               </div>
-              <div className="mt-2 flex justify-center space-x-1">
-                {Array(5)
-                  .fill(0)
-                  .map((_, i) => (
-                    <span key={i}>
-                      {i < employee.rating ? (
-                        <FaStar className="text-yellow-500" />
-                      ) : (
-                        <FaRegStar className="text-gray-300" />
-                      )}
-                    </span>
-                  ))}
-              </div>
+            
             </div>
           ))}
         </div>

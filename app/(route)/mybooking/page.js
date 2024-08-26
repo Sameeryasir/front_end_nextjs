@@ -12,7 +12,7 @@ export default function MyBookings() {
   const [appointments, setAppointments] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(10); // Constant limit
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,8 +34,13 @@ export default function MyBookings() {
         }
 
         const response = await fetchAppointementsByUserId(page, limit); // Pass the current page
-        setAppointments(response.data || []);
-        setTotalPages(Math.ceil(response.total / limit)); // Assuming the response includes a total count
+        const appointmentsData = response.data || [];
+        setAppointments(appointmentsData);
+
+        // Calculate total pages, ensure it's at least 1
+        const totalItems = response.total || 0;
+        const calculatedTotalPages = Math.max(Math.ceil(totalItems / limit), 1);
+        setTotalPages(calculatedTotalPages);
       } catch (error) {
         setError("Failed to fetch data. Please try again later.");
       } finally {
@@ -78,7 +83,7 @@ export default function MyBookings() {
         </div>
       ) : (
         <>
-          <BookingList app={appointments} isValid={isValid} />
+          <BookingList app={appointments} />
           <div className="flex justify-center mt-4">
             <button
               className={`px-4 py-2 rounded-l ${
