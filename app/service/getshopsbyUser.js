@@ -34,7 +34,7 @@ export async function fetchshopsByUserId(page = 1, limit = 10) {
   }
 }export async function fetchshopsByUser(){
   const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:3000/shop/my-shops",{
+  const response = await fetch("http://localhost:3000/shop/allshops",{
     method:"GET",
     headers:  {
     Authorization: `Bearer ${token}`,
