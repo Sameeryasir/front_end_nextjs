@@ -12,7 +12,7 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { CreateEmployees } from "@/app/service/createemployees";
-import { fetchshopsByUserId } from "@/app/service/getshopsbyUser";
+import { fetchshopsByUser } from "@/app/service/getshopsbyUser";
 import Shopdialog from "../../add-shop/_component/shopdialog";
 
 const schema = z.object({
@@ -87,7 +87,7 @@ export default function AddEmployeeForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchshopsByUserId();
+        const response = await fetchshopsByUser();
         console.log("Full response:", response);
         if (Array.isArray(response)) {
           setShops(response); // Directly set if it's already an array

@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CreateShop } from "@/app/service/createShop";
 import { fetchCategory } from "@/app/service/Category";
-import { fetchService } from "@/app/service/Service";
 import { FiUser, FiMail, FiBriefcase, FiMapPin } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -64,15 +63,16 @@ const schema = z.object({
 export default function AddShop() {
   const [category, setCategory] = useState([]);
   const [services, setServices] = useState([]);
+  const [selectedServices, setSelectedServices] = useState([]); // New state to manage selected services
   const [file, setFile] = useState(null);
   const [ImageUrl, setImageUrl] = useState(""); // State for image URL
   const [showModal, setShowModal] = useState(false); // State for showing modal
+  const [servicePrices, setServicePrices] = useState({}); // State for service prices
 
   const {
     register,
     handleSubmit,
     setValue,
-    getValues,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -85,8 +85,6 @@ export default function AddShop() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resp = await fetchService();
-        setServices(resp);
         const response = await fetchCategory();
         setCategory(response);
       } catch (error) {
@@ -95,6 +93,11 @@ export default function AddShop() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Sync the selected services with the form state
+    setValue("ServicesId", selectedServices);
+  }, [selectedServices, setValue]);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -131,13 +134,19 @@ export default function AddShop() {
 
   const onSubmit = async (data) => {
     try {
+      // Ensure the user has clicked the "Add Shop" button
+      if (data.ServicesId.length === 0) {
+        alert("Please select at least one service.");
+        return;
+      }
+
       // Upload image first and get the URL
       const uploadedImageUrl = file ? await uploadImage() : "";
 
       // Prepare shop data with imageUrl
       const shopData = {
         ...data,
-        ImageUrl: uploadedImageUrl || imageUrl, // Use uploadedImageUrl if available
+        ImageUrl: uploadedImageUrl || ImageUrl, // Use uploadedImageUrl if available
       };
 
       console.log("Shop Data being sent:", shopData); // Debugging: Check the final shop data
@@ -153,20 +162,73 @@ export default function AddShop() {
 
   const handleServiceChange = (e) => {
     const selectedValue = parseInt(e.target.value, 10);
-    const selectedValues = getValues("ServicesId") || [];
-    if (e.target.checked) {
-      selectedValues.push(selectedValue);
-    } else {
-      const index = selectedValues.indexOf(selectedValue);
-      if (index > -1) {
-        selectedValues.splice(index, 1);
-      }
+    setSelectedServices((prevSelected) =>
+      e.target.checked
+        ? [...prevSelected, selectedValue]
+        : prevSelected.filter((value) => value !== selectedValue)
+    );
+  };
+
+  const handleServicePriceChange = (serviceId, value) => {
+    setServicePrices((prev) => ({
+      ...prev,
+      [serviceId]: value,
+    }));
+  };
+
+  const updateServicePrice = async (serviceId) => {
+    const price = servicePrices[serviceId];
+
+    if (price === undefined) {
+      console.error("Price is not set for this service");
+      return;
     }
-    setValue("ServicesId", selectedValues);
+
+    try {
+      const response = await fetch(`http://localhost:3000/service/${serviceId}`, {
+        method: "PATCH", // or 'POST' depending on your API specification
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Include your auth token if needed
+        },
+        body: JSON.stringify({
+          ServicePrice: price, // Use the service price from the state
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update service price");
+      }
+
+      const result = await response.json();
+      console.log("Service price updated:", result);
+    } catch (error) {
+      console.error("Error updating service price:", error);
+    }
+  };
+
+  const handleCategoryChange = async (e) => {
+    const selectedCategoryId = parseInt(e.target.value, 10);
+
+    if (selectedCategoryId) {
+      try {
+        const selectedCategory = category.find((cat) => cat.id === selectedCategoryId);
+        const relatedServices = selectedCategory?.services || [];
+        setServices(relatedServices);
+        setSelectedServices([]); // Reset selected services when category changes
+      } catch (error) {
+        console.error("Error fetching related services:", error);
+      }
+    } else {
+      setServices([]); // Clear services if no category is selected
+      setSelectedServices([]);
+    }
+
+    setValue("CategoryId", selectedCategoryId); // Update the selected category in the form
   };
 
   const closeModal = () => {
-    window.location.reload(); 
+    window.location.reload();
     setShowModal(false);
   };
 
@@ -294,6 +356,7 @@ export default function AddShop() {
                 {...register("CategoryId", {
                   valueAsNumber: true,
                 })}
+                onChange={handleCategoryChange} // Use the new handler
                 className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md text-lg border-gray-300 p-4"
               >
                 <option value="">Select a Category</option>
@@ -317,23 +380,45 @@ export default function AddShop() {
             </label>
             <div className="mt-1 max-h-48 overflow-y-auto flex flex-col space-y-2">
               {services.map((service) => (
-                <div key={service?.ServiceId} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`service-${service?.ServiceId}`}
-                    value={service?.ServiceId}
-                    checked={getValues("ServicesId")?.includes(
-                      service?.ServiceId
-                    )}
-                    onChange={handleServiceChange}
-                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
-                  />
-                  <label
-                    htmlFor={`service-${service?.ServiceId}`}
-                    className="ml-3 block text-lg font-medium text-gray-700"
-                  >
-                    {service.ServiceName}
-                  </label>
+                <div
+                  key={service?.ServiceId}
+                  className="flex items-center justify-between space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`service-${service?.ServiceId}`}
+                      value={service?.ServiceId}
+                      checked={selectedServices.includes(service?.ServiceId)}
+                      onChange={handleServiceChange}
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    />
+                    <label
+                      htmlFor={`service-${service?.ServiceId}`}
+                      className="ml-2 block text-lg font-medium text-gray-700"
+                    >
+                      {service.ServiceName}
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <p>Rs</p>
+                    <input
+                      type="number"
+                      placeholder="Enter price"
+                      className="border border-gray-300 rounded-md p-2 text-sm"
+                      value={servicePrices[service?.ServiceId] || ""}
+                      onChange={(e) =>
+                        handleServicePriceChange(service?.ServiceId, e.target.value)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      className="px-4 py-2 text-white bg-indigo-600 rounded-lg"
+                      onClick={() => updateServicePrice(service?.ServiceId)}
+                    >
+                      Submit
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -376,7 +461,10 @@ export default function AddShop() {
               <h2 className="text-2xl font-bold mb-4">Shop Created</h2>
               <p>Your shop has been created successfully.</p>
               <div className="mt-6">
-                <Button onClick={closeModal} className="px-6 py-3 text-white bg-blue-500 rounded-lg">
+                <Button
+                  onClick={closeModal}
+                  className="px-6 py-3 text-white bg-blue-500 rounded-lg"
+                >
                   Close
                 </Button>
               </div>
@@ -387,3 +475,4 @@ export default function AddShop() {
     </div>
   );
 }
+  
